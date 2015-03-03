@@ -25,6 +25,8 @@ defmodule BorderPatrol.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      {:urna, git: "https://github.com/meh/urna.git", ref: "fa2e99302c"}
+    ]
   end
 end

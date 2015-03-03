@@ -3,6 +3,11 @@
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING.WTFPL file for more details.
 
-defmodule BorderPatrolTest do
-  use ExUnit.Case
+defmodule Util do
+  def shell_cmd(command) do
+    command
+      |> :binary.bin_to_list
+      |> :os.cmd
+      |> :binary.list_to_bin
+  end
 end

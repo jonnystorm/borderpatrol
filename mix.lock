@@ -1,0 +1,7 @@
+%{"cauldron": {:hex, :cauldron, "0.1.5"},
+  "exts": {:hex, :exts, "0.2.2"},
+  "httprot": {:hex, :httprot, "0.1.5"},
+  "jazz": {:hex, :jazz, "0.2.1"},
+  "reagent": {:hex, :reagent, "0.1.5"},
+  "socket": {:hex, :socket, "0.2.8"},
+  "urna": {:git, "https://github.com/meh/urna.git", "fa2e99302c1616f898c08c06054df1098a621345", [ref: "fa2e99302c"]}}
