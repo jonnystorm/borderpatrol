@@ -8,6 +8,7 @@ defmodule SNMPTest do
 
   test "agent returns correct Agent" do
     assert SNMP.agent("192.0.2.1", :udp, 161)
+      == %SNMP.Agent{host: "192.0.2.1", proto: :udp, port: 161}
   end
   test "agent fails for invalid protocol" do
     assert_raise FunctionClauseError, fn ->
@@ -113,5 +114,16 @@ defmodule SNMPTest do
 
     assert SNMP.credential_to_snmpcmd_args(test_creds) ==
       "-v3 -lauthPriv -u anname -a sha -A anpass -x aes -X anpass2"
+  end
+
+  test "to_string returns correct string for Agent" do
+    assert to_string(SNMP.agent("192.0.2.1", :udp, 161)) == "udp:192.0.2.1:161"
+  end
+
+  test "to_string returns correct string for Object of type integer" do
+    assert to_string(SNMP.object("1.3.6.0.9.20.1", :integer, 1)) == "1.3.6.0.9.20.1 i 1"
+  end
+  test "to_string returns correct string for Object of type octet string" do
+    assert to_string(SNMP.object("1.3.6.0.9.20.1", :octet_string, 1)) == "1.3.6.0.9.20.1 s 1"
   end
 end

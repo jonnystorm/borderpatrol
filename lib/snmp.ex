@@ -27,7 +27,7 @@ defmodule SNMP do
 
     @spec oid_list_to_string([non_neg_integer]) :: String.t
     def oid_list_to_string(oid_list) do
-      Enum.join(oid_list, ".")
+      oid_list |> Enum.join "."
     end
 
     @spec oid_string_to_list(String.t) :: [non_neg_integer]
@@ -38,14 +38,28 @@ defmodule SNMP do
         |> Enum.map(&(String.to_integer &1))
     end
 
-    @spec type_to_asn1_tag(atom) :: pos_integer
+    @spec asn1_tag_to_type(0 | 1..6 | 9..10) :: pos_integer
+    def asn1_tag_to_type(type) do
+      %{
+        0 => "=",
+        1 => "i",
+        2 => "i",
+        3 => "s",
+        4 => "s",
+        5 => "=",
+        6 => "o",
+        9 => "d",
+        10 => "i"
+      } |> Map.fetch!(type)
+    end
+    @spec type_to_asn1_tag(atom) :: 0 | 1..6 | 9..10
     def type_to_asn1_tag(type) do
       %{
         any: 0,
         boolean: 1,
         integer: 2,
         bit_string: 3,
-        octet_string: 4,
+        octet_string: 4, string: 4,
         null: 5,
         object_identifier: 6,
         real: 9,
@@ -115,6 +129,9 @@ defmodule SNMP do
   defp _credential_to_snmpcmd_args([{:version, version}|tail], acc) do
     _credential_to_snmpcmd_args(tail, ["-v#{version}"|acc])
   end
+  defp _credential_to_snmpcmd_args([{:community, community}|tail], acc) do
+    _credential_to_snmpcmd_args(tail, acc ++ ["-c #{community}"])
+  end
   defp _credential_to_snmpcmd_args([{:sec_level, sec_level}|tail], acc) do
     _credential_to_snmpcmd_args(tail, acc ++ ["-l#{sec_level}"])
   end
@@ -163,19 +180,35 @@ defmodule SNMP do
   def set(snmp_object, agent, credential) do
     gen_snmpcmd(:set, snmp_object, agent, credential)
       |> Util.shell_cmd
+      |> String.strip
   end
 end
 
-#defimpl String.Chars, for: SNMP.Agent do
-#  def to_string(agent) do
-#    transport_spec = agent
-#      |> Agent.protocol
-#      |> to_string
-#    transport_addr = Agent.host(agent)
-#    transport_port = agent
-#      |> Agent.port
-#      |> to_string
-#
-#    Enum.join([transport_spec, transport_addr, transport_port], ":")
-#  end
-#end
+defimpl String.Chars, for: SNMP.Agent do
+  import Kernel, except: [to_string: 1]
+
+  def to_string(agent) do
+    transport_spec = agent
+      |> SNMP.Agent.protocol
+      |> Kernel.to_string
+    transport_addr = SNMP.Agent.host(agent)
+    transport_port = agent
+      |> SNMP.Agent.port
+      |> Kernel.to_string
+
+    [transport_spec, transport_addr, transport_port]
+      |> Enum.join ":"
+  end
+end
+
+defimpl String.Chars, for: SNMP.Object do
+  import Kernel, except: [to_string: 1]
+
+  def to_string(object) do
+    [
+      object |> SNMP.Object.oid |> SNMP.Object.oid_list_to_string,
+      object |> SNMP.Object.type |> SNMP.Object.asn1_tag_to_type,
+      object |> SNMP.Object.value
+    ] |> Enum.join " "
+  end
+end
