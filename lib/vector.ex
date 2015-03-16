@@ -9,7 +9,7 @@ defprotocol Vector do
   def inner(vector1, vector2)
   def outer(vector1, vector2)
   def subtract(vector1, vector2)
-  def xor(vector1, vector2)
+  def bit_xor(vector1, vector2)
 end
 
 defimpl Vector, for: BitString do
@@ -66,7 +66,7 @@ defimpl Vector, for: BitString do
       |> :binary.list_to_bin
   end
 
-  def xor(bitstring1, bitstring2) do
+  def bit_xor(bitstring1, bitstring2) do
     [u, v] = [bitstring1, bitstring2]
       |> bitstrings_to_lists
 
@@ -100,7 +100,7 @@ defimpl Vector, for: List do
     vector_op(list1, list2, fn {ui, vi} -> ui - vi end)
   end
 
-  def xor(list1, list2) when is_list(list1) and is_list(list2) do
+  def bit_xor(list1, list2) when is_list(list1) and is_list(list2) do
     vector_op(list1, list2, fn {ui, vi} -> bxor(ui, vi) end)
   end
 

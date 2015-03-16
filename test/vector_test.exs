@@ -26,8 +26,8 @@ defmodule VectorTest do
   test "Vector.subtract returns correct result given two binaries" do
     assert Vector.subtract(<<1, 2, 3>>, <<1, 2, 3>>) == <<0, 0, 0>>
   end
-  test "Vector.xor returns correct result given two binaries" do
-    assert Vector.xor(<<1, 1, 1>>, <<3, 3, 3>>) == <<2, 2, 2>>
+  test "Vector.bit_xor returns correct result given two binaries" do
+    assert Vector.bit_xor(<<1, 1, 1>>, <<3, 3, 3>>) == <<2, 2, 2>>
   end
 
   test "Vector.add returns correct result given two lists" do
@@ -50,7 +50,7 @@ defmodule VectorTest do
   test "Vector.subtract returns correct result given two lists" do
     assert Vector.subtract([1, 2, 3], [1, 2, 3]) == [0, 0, 0]
   end
-  test "Vector.xor returns correct result given two lists" do
-    assert Vector.xor([1, 1, 1], [3, 3, 3]) == [2, 2, 2]
+  test "Vector.bit_xor returns correct result given two lists" do
+    assert Vector.bit_xor([1, 1, 1], [3, 3, 3]) == [2, 2, 2]
   end
 end

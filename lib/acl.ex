@@ -16,7 +16,7 @@ defmodule ACE do
   def values(ace), do: ace.values
   def masks(ace), do: ace.masks
 
-  def icmp(action, src, type, code, dst) do
+  def icmp(action, src, dst, type, code) do
     {src, src_mask} = IP.prefix_to_binary(src)
     {dst, dst_mask} = IP.prefix_to_binary(dst)
 
@@ -116,103 +116,222 @@ defmodule ACL do
   def version(acl), do: acl.version
 
   @spec append(ACL.t, ACE.t) :: ACL.t
-  def append(acl, ace), do: new(version(acl), name(acl), aces(acl) ++ [ace])
+  def append(acl, ace) do
+    new(version(acl), name(acl), aces(acl) ++ [ace])
+  end
+
+  defp append_icmp_ace(acl, action, src, dst, type, code) do
+    append(acl, ACE.icmp(action, src, dst, type, code))
+  end
+
+  defp append_tcp_ace(acl, action, src, src_port, dst, dst_port) do
+    append(acl, ACE.tcp(action, src, src_port, dst, dst_port))
+  end
+
+  defp append_udp_ace(acl, action, src, src_port, dst, dst_port) do
+    append(acl, ACE.udp(action, src, src_port, dst, dst_port))
+  end
 
   def permit(acl, :icmp, source, destination) do
-    permit(acl, :icmp, source, :any, :any, destination)
+    append_icmp_ace(acl, :permit, source, destination, :any, :any)
   end
   def permit(acl, :tcp, source, destination) do
-    permit(acl, :tcp, source, :any, destination, :any)
+    append_tcp_ace(acl, :tcp, source, :any, destination, :any)
   end
   def permit(acl, :udp, source, destination) do
-    permit(acl, :udp, source, :any, destination, :any)
+    append_udp_ace(acl, :udp, source, :any, destination, :any)
   end
+
   def permit(acl, :tcp, source, [eq: source_port], destination) do
-    permit(acl, :tcp, source, source_port, destination, :any)
+    append_tcp_ace(acl, :permit, source, source_port, destination, :any)
   end
   def permit(acl, :tcp, source, destination, [eq: destination_port]) do
-    permit(acl, :tcp, source, :any, destination, destination_port)
+    append_tcp_ace(acl, :permit, source, :any, destination, destination_port)
   end
   def permit(acl, :udp, source, [eq: source_port], destination) do
-    permit(acl, :udp, source, source_port, destination, :any)
+    append_udp_ace(acl, :permit, source, source_port, destination, :any)
   end
   def permit(acl, :udp, source, destination, [eq: destination_port]) do
-    permit(acl, :udp, source, :any, destination, destination_port)
+    append_udp_ace(acl, :permit, source, :any, destination, destination_port)
   end
-  def permit(acl, :icmp, source, type, code, destination) do
-    ACL.append(acl, ACE.icmp(:permit, source, type, code, destination))
+
+  def permit(acl, :icmp, source, destination, type, code) do
+    append_icmp_ace(acl, :permit, source, destination, type, code)
   end
   def permit(acl, :tcp, source, source_port, destination, destination_port) do
-    ACL.append(acl,
-      ACE.tcp(:permit, source, source_port, destination, destination_port))
+    append_tcp_ace(acl, :permit, source, source_port, destination, destination_port)
   end
   def permit(acl, :udp, source, source_port, destination, destination_port) do
-    ACL.append(acl,
-      ACE.udp(:permit, source, source_port, destination, destination_port))
+    append_udp_ace(acl, :permit, source, source_port, destination, destination_port)
   end
 
   def deny(acl, :icmp, source, destination) do
-    deny(acl, :icmp, source, :any, :any, destination)
+    append_icmp_ace(acl, :deny, source, destination, :any, :any)
   end
   def deny(acl, :tcp, source, destination) do
-    deny(acl, :tcp, source, :any, destination, :any)
+    append_tcp_ace(acl, :deny, source, :any, destination, :any)
   end
   def deny(acl, :udp, source, destination) do
-    deny(acl, :udp, source, :any, destination, :any)
+    append_udp_ace(acl, :deny, source, :any, destination, :any)
   end
+
   def deny(acl, :tcp, source, [eq: source_port], destination) do
-    deny(acl, :tcp, source, source_port, destination, :any)
+    append_tcp_ace(acl, :deny, source, source_port, destination, :any)
   end
   def deny(acl, :tcp, source, destination, [eq: destination_port]) do
-    deny(acl, :tcp, source, :any, destination, destination_port)
+    append_tcp_ace(acl, :deny, source, :any, destination, destination_port)
   end
   def deny(acl, :udp, source, [eq: source_port], destination) do
-    deny(acl, :udp, source, source_port, destination, :any)
+    append_udp_ace(acl, :deny, source, source_port, destination, :any)
   end
   def deny(acl, :udp, source, destination, [eq: destination_port]) do
-    deny(acl, :udp, source, :any, destination, destination_port)
+    append_udp_ace(acl, :deny, source, :any, destination, destination_port)
   end
-  def deny(acl, :icmp, source, type, code, destination) do
-    ACL.append(acl, ACE.icmp(:deny, source, type, code, destination))
+
+  def deny(acl, :icmp, source, destination, type, code) do
+    append_icmp_ace(acl, :deny, source, destination, type, code)
   end
   def deny(acl, :tcp, source, source_port, destination, destination_port) do
-    ACL.append(acl,
-      ACE.tcp(:deny, source, source_port, destination, destination_port))
+    append_tcp_ace(acl, :deny, source, source_port, destination, destination_port)
   end
   def deny(acl, :udp, source, source_port, destination, destination_port) do
-    ACL.append(acl,
-      ACE.udp(:deny, source, source_port, destination, destination_port))
+    append_udp_ace(acl, :deny, source, source_port, destination, destination_port)
   end
 end
 
 defimpl String.Chars, for: ACE do
-  def to_string(ace) do
-    case ACE.protocol(ace) do
-      :icmp ->
-        ACE.values(ace)
-          |> Enum.zip(ACE.masks(ace))
+  import Kernel, except: [to_string: 1]
 
-        #[to_string ACE.action(ace),
+  def to_string(ace) do
+    action = ACE.action(ace)
+    [ip_values, ip_masks, l4_values, l4_masks] = ACE.values(ace)
+      |> Enum.zip(ACE.masks ace)
+      |> Enum.map(&(Tuple.to_list &1))
+      |> List.flatten
+    src = ip_values
+      |> PCI.IP.source
+      |> IP.IPv4Addr.new
+    dst = ip_values
+      |> PCI.IP.destination
+      |> IP.IPv4Addr.new
+    smask = ip_masks
+      |> PCI.IP.source
+      |> (fn s -> IP.invert_mask s end).()
+      |> IP.IPv4Addr.new
+    dmask = ip_masks
+      |> PCI.IP.destination
+      |> (fn s -> IP.invert_mask s end).()
+      |> IP.IPv4Addr.new
+
+    case ACE.ip_protocol(ace) do
+      :icmp ->
+        type = l4_values
+          |> PCI.ICMP.type
+          |> PCI.bits_to_integer
+        code = l4_values
+          |> PCI.ICMP.code
+          |> PCI.bits_to_integer
+        tmask = l4_masks
+          |> PCI.ICMP.type
+          |> PCI.bits_to_integer
+        cmask = l4_masks
+          |> PCI.ICMP.code
+          |> PCI.bits_to_integer
+        
+        case tmask do
+          0x0 ->
+            "#{action} icmp #{src} #{smask} #{dst} #{dmask}"
+          0xff ->
+            case cmask do
+              0x0 ->
+                "#{action} icmp #{src} #{smask} #{dst} #{dmask} #{type}"
+              0xff ->
+                "#{action} icmp #{src} #{smask} #{dst} #{dmask} #{type} #{code}"
+            end
+        end
       :tcp ->
-        ""
+        spt = l4_values
+          |> PCI.TCP.source
+          |> PCI.bits_to_integer
+        dpt = l4_values
+          |> PCI.TCP.destination
+          |> PCI.bits_to_integer
+        sptmask = l4_masks
+          |> PCI.TCP.source
+          |> PCI.bits_to_integer
+        dptmask = l4_masks
+          |> PCI.TCP.destination
+          |> PCI.bits_to_integer
+
+        case sptmask do
+          0x0 ->
+            case dptmask do
+              0x0 ->
+                "#{action} tcp #{src} #{smask} #{dst} #{dmask}"
+              0xffff ->
+                "#{action} tcp #{src} #{smask} #{dst} #{dmask} eq #{dpt}"
+            end
+          0xffff ->
+            case dptmask do
+              0x0 ->
+                "#{action} tcp #{src} #{smask} eq #{spt} #{dst} #{dmask}"
+              0xffff ->
+                "#{action} tcp #{src} #{smask} eq #{spt} #{dst} #{dmask} eq #{dpt}"
+            end
+        end
       :udp ->
-        ""
+        spt = l4_values
+          |> PCI.UDP.source
+          |> PCI.bits_to_integer
+        dpt = l4_values
+          |> PCI.UDP.destination
+          |> PCI.bits_to_integer
+        sptmask = l4_masks
+          |> PCI.UDP.source
+          |> PCI.bits_to_integer
+        dptmask = l4_masks
+          |> PCI.UDP.destination
+          |> PCI.bits_to_integer
+
+        case sptmask do
+          0x0 ->
+            case dptmask do
+              0x0 ->
+                "#{action} udp #{src} #{smask} #{dst} #{dmask}"
+              0xffff ->
+                "#{action} udp #{src} #{smask} #{dst} #{dmask} eq #{dpt}"
+            end
+          0xffff ->
+            case dptmask do
+              0x0 ->
+                "#{action} udp #{src} #{smask} eq #{spt} #{dst} #{dmask}"
+              0xffff ->
+                "#{action} udp #{src} #{smask} eq #{spt} #{dst} #{dmask} eq #{dpt}"
+            end
+        end
       _ ->
         ""
     end
   end
 end
 
-#defimpl String.Chars, for: ACL do
-#  def to_string(acl) do
-#    if ACL.version(acl) == 6 do
-#      base_str = "ipv6"
-#    else
-#      base_str = "ip"
-#    end
-#
-#    [base_str <> " access-list extended " <> ACL.name(acl), "\n"]
-#      ++ (for ace <- ACL.aces(acl), do: to_string(ace) <> "\n")
-#      |> Enum.join("  ")
-#  end
-#end
+defimpl String.Chars, for: ACL do
+  import Kernel, except: [to_string: 1]
+
+  def to_string(acl) do
+    if ACL.version(acl) == 6 do
+      base_str = "ipv6"
+    else
+      base_str = "ip"
+    end
+
+    acl_name = acl
+      |> ACL.name
+      |> String.downcase
+      |> String.replace(" ", "_")
+
+    ([base_str <> " access-list extended " <> acl_name, "\n"]
+      ++ (for ace <- ACL.aces(acl), do: "  #{ace}\n"))
+      |> Enum.join
+  end
+end

@@ -93,141 +93,141 @@ defmodule PCITest do
   test "equal? returns true for same ICMP struct" do
     test_icmp = %PCI.ICMP{type: <<0::16>>, code: <<0xffff::16>>}
 
-    assert PCI.Lib.equal?(test_icmp, test_icmp) == true
+    assert PCIProto.equal?(test_icmp, test_icmp) == true
   end
 
   test "match? returns true for same ICMP struct with full mask" do
     test_icmp = %PCI.ICMP{type: <<0>>, code: <<0xff>>}
     icmp_mask = %PCI.ICMP{type: <<0xff>>, code: <<0xff>>}
 
-    assert PCI.Lib.match?(test_icmp, test_icmp, icmp_mask) == true
+    assert PCIProto.match?(test_icmp, test_icmp, icmp_mask) == true
   end
   test "match? returns true for same ICMP struct with partial mask" do
     test_icmp = %PCI.ICMP{type: <<0>>, code: <<0xff>>}
     icmp_mask = %PCI.ICMP{type: <<0xf0>>, code: <<0xf0>>}
 
-    assert PCI.Lib.match?(test_icmp, test_icmp, icmp_mask) == true
+    assert PCIProto.match?(test_icmp, test_icmp, icmp_mask) == true
   end
   test "match? returns true for different ICMP source with partial mask" do
     test_icmp1 = %PCI.ICMP{type: <<0>>, code: <<0xff>>}
     test_icmp2 = %PCI.ICMP{type: <<3>>, code: <<0xff>>}
     icmp_mask = %PCI.ICMP{type: <<0xf0>>, code: <<0xf0>>}
 
-    assert PCI.Lib.match?(test_icmp1, test_icmp2, icmp_mask) == true
+    assert PCIProto.match?(test_icmp1, test_icmp2, icmp_mask) == true
   end
   test "match? returns true for different ICMP destination with partial mask" do
     test_icmp1 = %PCI.ICMP{type: <<0>>, code: <<0xff>>}
     test_icmp2 = %PCI.ICMP{type: <<0>>, code: <<0xf3>>}
     icmp_mask = %PCI.ICMP{type: <<0xf0>>, code: <<0xf0>>}
 
-    assert PCI.Lib.match?(test_icmp1, test_icmp2, icmp_mask) == true
+    assert PCIProto.match?(test_icmp1, test_icmp2, icmp_mask) == true
   end
   test "match? returns false for different ICMP source with partial mask" do
     test_icmp1 = %PCI.ICMP{type: <<0>>, code: <<0xff>>}
     test_icmp2 = %PCI.ICMP{type: <<0x10>>, code: <<0xff>>}
     icmp_mask = %PCI.ICMP{type: <<0xf0>>, code: <<0xf0>>}
 
-    assert PCI.Lib.match?(test_icmp1, test_icmp2, icmp_mask) == false
+    assert PCIProto.match?(test_icmp1, test_icmp2, icmp_mask) == false
   end
   test "match? returns false for different ICMP destination with partial mask" do
     test_icmp1 = %PCI.ICMP{type: <<0>>, code: <<0xff>>}
     test_icmp2 = %PCI.ICMP{type: <<0>>, code: <<0xef>>}
     icmp_mask = %PCI.ICMP{type: <<0xf0>>, code: <<0xf0>>}
 
-    assert PCI.Lib.match?(test_icmp1, test_icmp2, icmp_mask) == false
+    assert PCIProto.match?(test_icmp1, test_icmp2, icmp_mask) == false
   end
 
   test "equal? returns true for same TCP struct" do
     test_tcp = %PCI.TCP{src: <<0>>, dst: <<0xffff>>}
 
-    assert PCI.Lib.equal?(test_tcp, test_tcp) == true
+    assert PCIProto.equal?(test_tcp, test_tcp) == true
   end
 
   test "match? returns true for same TCP struct with full mask" do
     test_tcp = %PCI.TCP{src: <<0::16>>, dst: <<0xffff::16>>}
     tcp_mask = %PCI.TCP{src: <<0xffff::16>>, dst: <<0xffff::16>>}
 
-    assert PCI.Lib.match?(test_tcp, test_tcp, tcp_mask) == true
+    assert PCIProto.match?(test_tcp, test_tcp, tcp_mask) == true
   end
   test "match? returns true for same TCP struct with partial mask" do
     test_tcp = %PCI.TCP{src: <<0::16>>, dst: <<0xffff::16>>}
     tcp_mask = %PCI.TCP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_tcp, test_tcp, tcp_mask) == true
+    assert PCIProto.match?(test_tcp, test_tcp, tcp_mask) == true
   end
   test "match? returns true for different TCP source with partial mask" do
     test_tcp1 = %PCI.TCP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_tcp2 = %PCI.TCP{src: <<3::16>>, dst: <<0xffff::16>>}
     tcp_mask = %PCI.TCP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_tcp1, test_tcp2, tcp_mask) == true
+    assert PCIProto.match?(test_tcp1, test_tcp2, tcp_mask) == true
   end
   test "match? returns true for different TCP destination with partial mask" do
     test_tcp1 = %PCI.TCP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_tcp2 = %PCI.TCP{src: <<0::16>>, dst: <<0xfff3::16>>}
     tcp_mask = %PCI.TCP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_tcp1, test_tcp2, tcp_mask) == true
+    assert PCIProto.match?(test_tcp1, test_tcp2, tcp_mask) == true
   end
   test "match? returns false for different TCP source with partial mask" do
     test_tcp1 = %PCI.TCP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_tcp2 = %PCI.TCP{src: <<0x10::16>>, dst: <<0xffff::16>>}
     tcp_mask = %PCI.TCP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_tcp1, test_tcp2, tcp_mask) == false
+    assert PCIProto.match?(test_tcp1, test_tcp2, tcp_mask) == false
   end
   test "match? returns false for different TCP destination with partial mask" do
     test_tcp1 = %PCI.TCP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_tcp2 = %PCI.TCP{src: <<0::16>>, dst: <<0xffef::16>>}
     tcp_mask = %PCI.TCP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_tcp1, test_tcp2, tcp_mask) == false
+    assert PCIProto.match?(test_tcp1, test_tcp2, tcp_mask) == false
   end
 
   test "equal? returns true for same UDP struct" do
     test_udp = %PCI.UDP{src: <<0::16>>, dst: <<0xffff::16>>}
 
-    assert PCI.Lib.equal?(test_udp, test_udp) == true
+    assert PCIProto.equal?(test_udp, test_udp) == true
   end
 
   test "match? returns true for same UDP struct with full mask" do
     test_udp = %PCI.UDP{src: <<0::16>>, dst: <<0xffff::16>>}
     udp_mask = %PCI.UDP{src: <<0xffff::16>>, dst: <<0xffff::16>>}
 
-    assert PCI.Lib.match?(test_udp, test_udp, udp_mask) == true
+    assert PCIProto.match?(test_udp, test_udp, udp_mask) == true
   end
   test "match? returns true for same UDP struct with partial mask" do
     test_udp = %PCI.UDP{src: <<0::16>>, dst: <<0xffff::16>>}
     udp_mask = %PCI.UDP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_udp, test_udp, udp_mask) == true
+    assert PCIProto.match?(test_udp, test_udp, udp_mask) == true
   end
   test "match? returns true for different UDP source with partial mask" do
     test_udp1 = %PCI.UDP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_udp2 = %PCI.UDP{src: <<3::16>>, dst: <<0xffff::16>>}
     udp_mask = %PCI.UDP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_udp1, test_udp2, udp_mask) == true
+    assert PCIProto.match?(test_udp1, test_udp2, udp_mask) == true
   end
   test "match? returns true for different UDP destination with partial mask" do
     test_udp1 = %PCI.UDP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_udp2 = %PCI.UDP{src: <<0::16>>, dst: <<0xfff3::16>>}
     udp_mask = %PCI.UDP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_udp1, test_udp2, udp_mask) == true
+    assert PCIProto.match?(test_udp1, test_udp2, udp_mask) == true
   end
   test "match? returns false for different UDP source with partial mask" do
     test_udp1 = %PCI.UDP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_udp2 = %PCI.UDP{src: <<0x10::16>>, dst: <<0xffff::16>>}
     udp_mask = %PCI.UDP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_udp1, test_udp2, udp_mask) == false
+    assert PCIProto.match?(test_udp1, test_udp2, udp_mask) == false
   end
   test "match? returns false for different UDP destination with partial mask" do
     test_udp1 = %PCI.UDP{src: <<0::16>>, dst: <<0xffff::16>>}
     test_udp2 = %PCI.UDP{src: <<0::16>>, dst: <<0xffef::16>>}
     udp_mask = %PCI.UDP{src: <<0xfff0::16>>, dst: <<0xfff0::16>>}
 
-    assert PCI.Lib.match?(test_udp1, test_udp2, udp_mask) == false
+    assert PCIProto.match?(test_udp1, test_udp2, udp_mask) == false
   end
 end

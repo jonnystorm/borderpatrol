@@ -6,13 +6,17 @@
 defmodule ACLTest do
   use ExUnit.Case, async: true
 
-  import ACL, only: [permit: 4, permit: 5, permit: 6, deny: 4, deny: 5, deny: 6]
+  import ACL #, only: [permit: 4, permit: 5, permit: 6, deny: 4, deny: 5, deny: 6]
 
-  test "stuff" do
-    stuff_and_things = ACL.new(4, "Stuff and things")
+  test "to_string returns correct string from ACL" do
+    test_acl = ACL.new(4, "Test ACL")
       |> permit(:tcp, "192.0.2.0/24", "192.0.2.4/32", eq: 443)
-      |>   deny(:tcp, "192.0.2.1/32", "192.0.2.4/32")
+      |>   deny(:icmp, "192.0.2.1/32", "192.0.2.4/32")
   
-    IO.puts stuff_and_things
+    assert to_string(test_acl) == ("""
+    ip access-list extended test_acl
+      permit tcp 192.0.2.0 0.0.0.255 192.0.2.4 0.0.0.0 eq 443
+      deny icmp 192.0.2.1 0.0.0.0 192.0.2.4 0.0.0.0
+    """)
   end
 end

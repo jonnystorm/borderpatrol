@@ -27,6 +27,11 @@ defmodule IP do
     raise ArgumentError, message: message
   end
 
+  def invert_mask(mask) do
+    len = bit_size mask
+    Vector.bit_xor(mask, integer_to_binary_mask(len, len))
+  end
+
   def contains_only?(string, characters)
       when is_binary(string) and is_binary(characters) do
     char_list = :binary.bin_to_list(characters)
@@ -241,35 +246,39 @@ defmodule IP do
   end
 
   defprotocol Addr do
-    def address(addr)
-    def to_string(addr)
+    def address(ip)
   end
-
-  defimpl Addr, for: IP.IPv4Addr do
-    @spec address(IP.IPv4Addr.t) :: <<_ :: 4 * 8>>
+  
+  defimpl Addr, for: IPv4Addr do
     def address(ipv4), do: ipv4.addr
-
-    @spec to_string(IP.IPv4Addr.t) :: String.t
-    def to_string(ipv4) do
-      ipv4
-        |> address
-        |> :binary.bin_to_list
-        |> Enum.join(".")
-    end
   end
 
-  defimpl Addr, for: IP.IPv6Addr do
-    @spec address(IPv6Addr.t) :: <<_ :: 16 * 8>>
+  defimpl Addr, for: IPv6Addr do
     def address(ipv6), do: ipv6.addr
-
-    @spec to_string(IP.IPv6Addr.t) :: String.t
-    def to_string(ipv6) do
-      ipv6
-        |> address
-        |> :binary.bin_to_list
-        |> Enum.join(":")
-        |> String.replace(~r/(0:)+/, ":")
-    end
   end
 end
 
+defimpl String.Chars, for: IP.IPv4Addr do
+  import Kernel, except: [to_string: 1]
+
+  @spec to_string(IP.IPv4Addr.t) :: String.t
+  def to_string(ipv4) do
+    ipv4
+      |> IP.Addr.address
+      |> :binary.bin_to_list
+      |> Enum.join(".")
+  end
+end
+
+defimpl String.Chars, for: IP.IPv6Addr do
+  import Kernel, except: [to_string: 1]
+
+  @spec to_string(IP.IPv6Addr.t) :: String.t
+  def to_string(ipv6) do
+    ipv6
+      |> IP.Addr.address
+      |> :binary.bin_to_list
+      |> Enum.join(":")
+      |> String.replace(~r/(0:)+/, ":")
+  end
+end
