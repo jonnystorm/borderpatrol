@@ -202,6 +202,9 @@ end
 defimpl String.Chars, for: ACE do
   import Kernel, except: [to_string: 1]
 
+  @doc """
+  Fix this awful mess.
+  """
   def to_string(ace) do
     action = ACE.action(ace)
     [ip_values, ip_masks, l4_values, l4_masks] = ACE.values(ace)

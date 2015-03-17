@@ -11,7 +11,10 @@ defmodule SNMP.Cisco do
       ccCopyDestFileType: nil,
       ccCopyFileName: nil,
       ccCopyServerAddressType: nil,
-      ccCopyServerAddressRev1: nil
+      ccCopyServerAddressRev1: nil,
+      ccCopyEntryRowStatus: nil,
+      ccCopyState: nil,
+      ccCopyFailCause: nil
     ]
     @type t :: %CcCopyEntry{
       ccCopyProtocol: 1..5,
@@ -19,7 +22,10 @@ defmodule SNMP.Cisco do
       ccCopyDestFileType: 1..6,
       ccCopyFileName: String.t,
       ccCopyServerAddressType: 0..4 | 16,
-      ccCopyServerAddressRev1: String.t
+      ccCopyServerAddressRev1: String.t,
+      ccCopyEntryRowStatus: 1..6,
+      ccCopyState: 1..4,
+      ccCopyFailCause: 1..9
     }
 
     def protocol(ccCopyEntry), do: ccCopyEntry.ccCopyProtocol
@@ -28,6 +34,9 @@ defmodule SNMP.Cisco do
     def filename(ccCopyEntry), do: ccCopyEntry.ccCopyFileName
     def server_address_type(ccCopyEntry), do: ccCopyEntry.ccCopyServerAddressType
     def server_address(ccCopyEntry), do: ccCopyEntry.ccCopyServerAddressRev1
+    def entry_row_status(ccCopyEntry), do: ccCopyEntry.ccCopyEntryRowStatus
+    def copy_state(ccCopyEntry), do: ccCopyEntry.ccCopyState
+    def copy_fail_cause(ccCopyEntry), do: ccCopyEntry.ccCopyFailCause
 
     @spec config_copy_proto_to_number(atom) :: 1..5
     def config_copy_proto_to_number(proto) do
@@ -52,19 +61,16 @@ defmodule SNMP.Cisco do
       } |> Map.fetch!(type)
     end
 
-    @spec number_to_copy_config_fail_cause(1..9) :: atom
-    def number_to_copy_config_fail_cause(number) do
+    @spec row_status_to_number(atom) :: 1..6
+    def row_status_to_number(row_status) do
       %{
-        1 => :unknown,
-        2 => :bad_file_name,
-        3 => :timeout,
-        4 => :no_mem,
-        5 => :no_config,
-        6 => :unsupported_protocol,
-        7 => :some_config_apply_failed,
-        8 => :system_not_ready,
-        9 => :request_aborted
-      } |> Map.fetch!(number)
+        active: 1,
+        not_in_service: 2,
+        not_ready: 3,
+        create_and_go: 4,
+        create_and_wait: 5,
+        destroy: 6
+      } |> Map.fetch!(row_status)
     end
 
     @spec number_to_row_status(1..6) :: atom
@@ -90,6 +96,56 @@ defmodule SNMP.Cisco do
         dns: 16
       } |> Map.fetch!(type)
     end
+
+    @spec copy_state_to_number(atom) :: 1..4
+    def copy_state_to_number(state) do
+      %{
+        waiting: 1,
+        running: 2,
+        successful: 3,
+        failed: 4
+      } |> Map.fetch!(state)
+    end
+
+    @spec number_to_copy_state(1..4) :: atom
+    def number_to_copy_state(number) do
+      %{
+        1 => :waiting,
+        2 => :running,
+        3 => :successful,
+        4 => :failed
+      } |> Map.fetch!(number)
+    end
+
+    @spec copy_fail_cause_to_number(atom) :: 1..9
+    def copy_fail_cause_to_number(cause) do
+      %{
+        unknown: 1,
+        bad_file_name: 2,
+        timeout: 3,
+        no_mem: 4,
+        no_config: 5,
+        unsupported_protocol: 6,
+        some_config_apply_failed: 7,
+        system_not_ready: 8,
+        request_aborted: 9
+      } |> Map.fetch!(cause)
+    end
+
+    @spec number_to_copy_fail_cause(1..9) :: atom
+    def number_to_copy_fail_cause(number) do
+      %{
+        1 => :unknown,
+        2 => :bad_file_name,
+        3 => :timeout,
+        4 => :no_mem,
+        5 => :no_config,
+        6 => :unsupported_protocol,
+        7 => :some_config_apply_failed,
+        8 => :system_not_ready,
+        9 => :request_aborted
+      } |> Map.fetch!(number)
+    end
   end
 
   @spec cc_copy_entry(atom, atom, atom, String.t, atom, String.t) :: CcCopyEntry.t
@@ -100,7 +156,10 @@ defmodule SNMP.Cisco do
       ccCopyDestFileType: CcCopyEntry.config_file_type_to_number(dst_file_type),
       ccCopyFileName: filename,
       ccCopyServerAddressType: CcCopyEntry.inet_addr_type_to_number(server_addr_type),
-      ccCopyServerAddressRev1: server_addr
+      ccCopyServerAddressRev1: server_addr,
+      ccCopyEntryRowStatus: CcCopyEntry.row_status_to_number(:create_and_go),
+      ccCopyState: CcCopyEntry.copy_state_to_number(:waiting),
+      ccCopyFailCause: CcCopyEntry.copy_fail_cause_to_number(:unknown)
     }
   end
 
@@ -118,7 +177,9 @@ defmodule SNMP.Cisco do
       SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.15.#{row}",
         :integer, CcCopyEntry.server_address_type(ccCopyEntry)),
       SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.16.#{row}",
-        :octet_string, CcCopyEntry.server_address(ccCopyEntry))
+        :octet_string, CcCopyEntry.server_address(ccCopyEntry)),
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.14.#{row}",
+        :integer, CcCopyEntry.entry_row_status(ccCopyEntry))
     ]
   end
 end
