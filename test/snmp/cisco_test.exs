@@ -13,7 +13,10 @@ defmodule SNMP.CiscoTest do
         ccCopyDestFileType: 4,
         ccCopyFileName: "scrap.cfg",
         ccCopyServerAddressType: 1,
-        ccCopyServerAddressRev1: "192.0.2.1"
+        ccCopyServerAddressRev1: "192.0.2.1",
+        ccCopyEntryRowStatus: 4,
+        ccCopyState: 1,
+        ccCopyFailCause: 1
       }
   end
   test "cc_copy_entry fails for incorrect protocol" do
@@ -39,7 +42,10 @@ defmodule SNMP.CiscoTest do
       ccCopyDestFileType: 4,
       ccCopyFileName: "scrap.cfg",
       ccCopyServerAddressType: 1,
-      ccCopyServerAddressRev1: "192.0.2.1"
+      ccCopyServerAddressRev1: "192.0.2.1",
+      ccCopyEntryRowStatus: 4,
+      ccCopyState: 1,
+      ccCopyFailCause: 1
     }
 
     assert cc_copy_entry_to_snmp_objects(test_entry, 1) ==
@@ -49,7 +55,8 @@ defmodule SNMP.CiscoTest do
         %SNMP.Object{oid: [1,3,6,1,4,1,9,9,96,1,1,1,1,4,1], type: 2, value: 4},
         %SNMP.Object{oid: [1,3,6,1,4,1,9,9,96,1,1,1,1,6,1], type: 4, value: "scrap.cfg"},
         %SNMP.Object{oid: [1,3,6,1,4,1,9,9,96,1,1,1,1,15,1], type: 2, value: 1},
-        %SNMP.Object{oid: [1,3,6,1,4,1,9,9,96,1,1,1,1,16,1], type: 4, value: "192.0.2.1"}
+        %SNMP.Object{oid: [1,3,6,1,4,1,9,9,96,1,1,1,1,16,1], type: 4, value: "192.0.2.1"},
+        %SNMP.Object{oid: [1,3,6,1,4,1,9,9,96,1,1,1,1,14,1], type: 2, value: 4}
       ]
   end
 end

@@ -154,33 +154,33 @@ defmodule SNMP do
     _credential_to_snmpcmd_args(credential, [])
   end
 
-  def gen_snmpcmd(:get, snmp_object, agent, credential) do
+  def gen_snmpcmd(:get, snmp_objects, agent, credential) do
     [
       "snmpget -Ov",
       credential_to_snmpcmd_args(credential),
       to_string(agent),
-      Object.oid_list_to_string(Object.oid snmp_object)
+      (for o <- snmp_objects, do: o |> Object.oid |> Object.oid_list_to_string)
     ] |> Enum.join(" ")
   end
-  def gen_snmpcmd(:set, snmp_object, agent, credential) do
+  def gen_snmpcmd(:set, snmp_objects, agent, credential) do
     [
-      "snmpset -Ov",
+      "snmpset -On",
       credential_to_snmpcmd_args(credential),
-      to_string(agent),
-      to_string(snmp_object)
+      to_string(agent)|
+      (for o <- snmp_objects, do: to_string o)
     ] |> Enum.join(" ")
   end
 
-  def get(snmp_object, agent, credential) do
-    gen_snmpcmd(:get, snmp_object, agent, credential)
+  def get(snmp_objects, agent, credential) do
+    gen_snmpcmd(:get, snmp_objects, agent, credential)
       |> Util.shell_cmd
-      |> String.strip
+      |> String.rstrip
   end
 
-  def set(snmp_object, agent, credential) do
-    gen_snmpcmd(:set, snmp_object, agent, credential)
+  def set(snmp_objects, agent, credential) do
+    gen_snmpcmd(:set, snmp_objects, agent, credential)
       |> Util.shell_cmd
-      |> String.strip
+      |> String.rstrip
   end
 end
 
