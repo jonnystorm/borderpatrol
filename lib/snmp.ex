@@ -22,8 +22,11 @@ defmodule SNMP do
     }
     
     def oid(object), do: object.oid
+    def oid(object, new_value), do: %Object{object|oid: new_value}
     def type(object), do: object.type
+    def type(object, new_type), do: %Object{object|type: new_type}
     def value(object), do: object.value
+    def value(object, new_value), do: %Object{object|value: new_value}
 
     @spec oid_list_to_string([non_neg_integer]) :: String.t
     def oid_list_to_string(oid_list) do
@@ -65,6 +68,11 @@ defmodule SNMP do
         real: 9,
         enumerated: 10
       } |> Map.fetch!(type)
+    end
+
+    @spec index(Object.t, pos_integer) :: Object.t
+    def index(object, index) when is_integer(index) do
+      Object.oid(object, Object.oid(object) ++ [index])
     end
   end
 
@@ -154,15 +162,17 @@ defmodule SNMP do
     _credential_to_snmpcmd_args(credential, [])
   end
 
-  def gen_snmpcmd(:get, snmp_objects, agent, credential) do
+  def gen_snmpcmd(:get, snmp_objects, agent, credential)
+      when is_list(snmp_objects) do
     [
-      "snmpget -Ov",
+      "snmpget -On",
       credential_to_snmpcmd_args(credential),
-      to_string(agent),
+      to_string(agent)|
       (for o <- snmp_objects, do: o |> Object.oid |> Object.oid_list_to_string)
     ] |> Enum.join(" ")
   end
-  def gen_snmpcmd(:set, snmp_objects, agent, credential) do
+  def gen_snmpcmd(:set, snmp_objects, agent, credential)
+      when is_list(snmp_objects) do
     [
       "snmpset -On",
       credential_to_snmpcmd_args(credential),
@@ -171,16 +181,41 @@ defmodule SNMP do
     ] |> Enum.join(" ")
   end
 
-  def get(snmp_objects, agent, credential) do
-    gen_snmpcmd(:get, snmp_objects, agent, credential)
-      |> Util.shell_cmd
-      |> String.rstrip
+  defp parse_snmp_output(output) do
+    output
+      |> String.strip
+      |> String.split("\n")
+      |> Enum.map(fn o ->
+        try do
+          [oid, _, type_str, value] = String.split(o)
+          type = type_str
+            |> String.rstrip(?:)
+            |> String.downcase
+            |> String.to_atom
+
+          {:ok, object(oid, type, value)}
+        rescue
+          _e in MatchError -> {:error, o}
+        end
+      end)
   end
 
-  def set(snmp_objects, agent, credential) do
+  def get(snmp_objects, agent, credential) when is_list(snmp_objects) do
+    gen_snmpcmd(:get, snmp_objects, agent, credential)
+      |> Util.shell_cmd
+      |> parse_snmp_output
+  end
+  def get(snmp_object, agent, credential) do
+    get([snmp_object], agent, credential)
+  end
+
+  def set(snmp_objects, agent, credential) when is_list(snmp_objects) do
     gen_snmpcmd(:set, snmp_objects, agent, credential)
       |> Util.shell_cmd
-      |> String.rstrip
+      |> parse_snmp_output
+  end
+  def set(snmp_object, agent, credential) do
+    set([snmp_object], agent, credential)
   end
 end
 
