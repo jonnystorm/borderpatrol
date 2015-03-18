@@ -10,47 +10,51 @@ defmodule SNMP.Cisco do
       ccCopySourceFileType: nil,
       ccCopyDestFileType: nil,
       ccCopyFileName: nil,
-      ccCopyServerAddressType: nil,
-      ccCopyServerAddressRev1: nil,
-      ccCopyEntryRowStatus: nil,
+      ccCopyUserName: nil,
+      ccCopyUserPassword: nil,
+      ccCopyNotificationOnCompletion: nil,
       ccCopyState: nil,
-      ccCopyFailCause: nil
+      ccCopyTimeStarted: nil,
+      ccCopyTimeCompleted: nil,
+      ccCopyFailCause: nil,
+      ccCopyEntryRowStatus: nil,
+      ccCopyServerAddressType: nil,
+      ccCopyServerAddressRev1: nil
     ]
     @type t :: %CcCopyEntry{
       ccCopyProtocol: 1..5,
       ccCopySourceFileType: 1..6,
       ccCopyDestFileType: 1..6,
       ccCopyFileName: String.t,
-      ccCopyServerAddressType: 0..4 | 16,
-      ccCopyServerAddressRev1: String.t,
-      ccCopyEntryRowStatus: 1..6,
+      ccCopyUserName: String.t,
+      ccCopyUserPassword: String.t,
+      ccCopyNotificationOnCompletion: 1..2,
       ccCopyState: 1..4,
-      ccCopyFailCause: 1..9
+      ccCopyTimeStarted: String.t,
+      ccCopyTimeCompleted: String.t,
+      ccCopyFailCause: 1..9,
+      ccCopyEntryRowStatus: 1..6,
+      ccCopyServerAddressType: 0..4 | 16,
+      ccCopyServerAddressRev1: String.t
     }
 
-    def protocol(ccCopyEntry), do: ccCopyEntry.ccCopyProtocol
-    def source_file_type(ccCopyEntry), do: ccCopyEntry.ccCopySourceFileType
-    def dest_file_type(ccCopyEntry), do: ccCopyEntry.ccCopyDestFileType
-    def filename(ccCopyEntry), do: ccCopyEntry.ccCopyFileName
-    def server_address_type(ccCopyEntry), do: ccCopyEntry.ccCopyServerAddressType
-    def server_address(ccCopyEntry), do: ccCopyEntry.ccCopyServerAddressRev1
-    def entry_row_status(ccCopyEntry), do: ccCopyEntry.ccCopyEntryRowStatus
-    def copy_state(ccCopyEntry), do: ccCopyEntry.ccCopyState
-    def copy_fail_cause(ccCopyEntry), do: ccCopyEntry.ccCopyFailCause
-
-    @spec config_copy_proto_to_number(atom) :: 1..5
-    def config_copy_proto_to_number(proto) do
+    def typeConfigCopyProtocol do
       %{
         tftp: 1,
         ftp: 2,
         rcp: 3,
         scp: 4,
         sftp: 5
-      } |> Map.fetch!(proto)
+      }
+    end
+    def typeConfigCopyProtocol(value) when is_atom(value) do
+      typeConfigCopyProtocol[value]
+    end
+    def typeConfigCopyProtocol(value) when is_integer(value) do
+      Util.get_key_by_value(typeConfigCopyProtocol, value)
     end
 
-    @spec config_file_type_to_number(atom) :: 1..6
-    def config_file_type_to_number(type) do
+    def typeConfigFileType do
       %{
         network_file: 1,
         ios_file: 2,
@@ -58,35 +62,16 @@ defmodule SNMP.Cisco do
         running_config: 4,
         terminal: 5,
         fabric_startup_config: 6
-      } |> Map.fetch!(type)
+      }
+    end
+    def typeConfigFileType(value) when is_atom(value) do
+      typeConfigFileType[value]
+    end
+    def typeConfigFileType(value) when is_integer(value) do
+      Util.get_key_by_value(typeConfigFileType, value)
     end
 
-    @spec row_status_to_number(atom) :: 1..6
-    def row_status_to_number(row_status) do
-      %{
-        active: 1,
-        not_in_service: 2,
-        not_ready: 3,
-        create_and_go: 4,
-        create_and_wait: 5,
-        destroy: 6
-      } |> Map.fetch!(row_status)
-    end
-
-    @spec number_to_row_status(1..6) :: atom
-    def number_to_row_status(number) do
-      %{
-        1 => :active,
-        2 => :not_in_service,
-        3 => :not_ready,
-        4 => :create_and_go,
-        5 => :create_and_wait,
-        6 => :destroy
-      } |> Map.fetch!(number)
-    end
-
-    @spec inet_addr_type_to_number(atom) :: 0..4 | 16
-    def inet_addr_type_to_number(type) do
+    def typeInetAddressType do
       %{
         unknown: 0,
         ipv4: 1,
@@ -94,31 +79,31 @@ defmodule SNMP.Cisco do
         ipv4z: 3,
         ipv6z: 4,
         dns: 16
-      } |> Map.fetch!(type)
+      }
+    end
+    def typeInetAddressType(value) when is_atom(value) do
+      typeInetAddressType[value]
+    end
+    def typeInetAddressType(value) when is_integer(value) do
+      Util.get_key_by_value(typeInetAddressType, value)
     end
 
-    @spec copy_state_to_number(atom) :: 1..4
-    def copy_state_to_number(state) do
+    def typeConfigCopyState do
       %{
         waiting: 1,
         running: 2,
         successful: 3,
         failed: 4
-      } |> Map.fetch!(state)
+      }
+    end
+    def typeConfigCopyState(value) when is_atom(value) do
+      typeConfigCopyState[value]
+    end
+    def typeConfigCopyState(value) when is_integer(value) do
+      Util.get_key_by_value(typeConfigCopyState, value)
     end
 
-    @spec number_to_copy_state(1..4) :: atom
-    def number_to_copy_state(number) do
-      %{
-        1 => :waiting,
-        2 => :running,
-        3 => :successful,
-        4 => :failed
-      } |> Map.fetch!(number)
-    end
-
-    @spec copy_fail_cause_to_number(atom) :: 1..9
-    def copy_fail_cause_to_number(cause) do
+    def typeConfigCopyFailCause do
       %{
         unknown: 1,
         bad_file_name: 2,
@@ -129,58 +114,305 @@ defmodule SNMP.Cisco do
         some_config_apply_failed: 7,
         system_not_ready: 8,
         request_aborted: 9
-      } |> Map.fetch!(cause)
+      }
+    end
+    def typeConfigCopyFailCause(value) when is_atom(value) do
+      typeConfigCopyFailCause[value]
+    end
+    def typeConfigCopyFailCause(value) when is_integer(value) do
+      Util.get_key_by_value(typeConfigCopyFailCause, value)
     end
 
-    @spec number_to_copy_fail_cause(1..9) :: atom
-    def number_to_copy_fail_cause(number) do
+    def typeRowStatus do
       %{
-        1 => :unknown,
-        2 => :bad_file_name,
-        3 => :timeout,
-        4 => :no_mem,
-        5 => :no_config,
-        6 => :unsupported_protocol,
-        7 => :some_config_apply_failed,
-        8 => :system_not_ready,
-        9 => :request_aborted
-      } |> Map.fetch!(number)
+        active: 1,
+        not_in_service: 2,
+        not_ready: 3,
+        create_and_go: 4,
+        create_and_wait: 5,
+        destroy: 6
+      }
+    end
+    def typeRowStatus(value) when is_atom(value) do
+      typeRowStatus[value]
+    end
+    def typeRowStatus(value) when is_integer(value) do
+      Util.get_key_by_value(typeRowStatus, value)
+    end
+
+    def typeTruthValue do
+      %{
+        true: 1,
+        false: 2
+      }
+    end
+    def typeTruthValue(value) when is_atom(value) do
+      typeTruthValue[value]
+    end
+    def typeTruthValue(value) when is_integer(value) do
+      Util.get_key_by_value(typeTruthValue, value)
+    end
+
+    def ccCopyProtocol do
+      ccCopyProtocol(%CcCopyEntry{})
+    end
+    def ccCopyProtocol(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.2",
+        :integer, ccCopyEntry.ccCopyProtocol)
+    end
+    def ccCopyProtocol(ccCopyEntry, value) do
+      typeConfigCopyProtocol
+        |> Map.fetch!(value)
+        |> (fn v -> %CcCopyEntry{ccCopyEntry|ccCopyProtocol: v} end).()
+    end
+
+    def ccCopySourceFileType do
+      ccCopySourceFileType(%CcCopyEntry{})
+    end
+    def ccCopySourceFileType(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.3",
+        :integer, ccCopyEntry.ccCopySourceFileType)
+    end
+    def ccCopySourceFileType(ccCopyEntry, value) do
+      typeConfigFileType
+        |> Map.fetch!(value)
+        |> (fn v -> %CcCopyEntry{ccCopyEntry|ccCopySourceFileType: v} end).()
+    end
+
+    def ccCopyDestFileType do
+      ccCopyDestFileType(%CcCopyEntry{})
+    end
+    def ccCopyDestFileType(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.4",
+        :integer, ccCopyEntry.ccCopyDestFileType)
+    end
+    def ccCopyDestFileType(ccCopyEntry, value) do
+      typeConfigFileType
+        |> Map.fetch!(value)
+        |> (fn v -> %CcCopyEntry{ccCopyEntry|ccCopyDestFileType: v} end).()
+    end
+
+    def ccCopyFileName do
+      ccCopyFileName(%CcCopyEntry{})
+    end
+    def ccCopyFileName(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.6",
+        :octet_string, ccCopyEntry.ccCopyFileName)
+    end
+    def ccCopyFileName(ccCopyEntry, value) when is_binary(value) do
+      %CcCopyEntry{ccCopyEntry|ccCopyFileName: value}
+    end
+
+    def ccCopyUserName do
+      ccCopyUserName(%CcCopyEntry{})
+    end
+    def ccCopyUserName(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.7",
+        :octet_string, ccCopyEntry.ccCopyUserName)
+    end
+    def ccCopyUserName(ccCopyEntry, value) do
+      %CcCopyEntry{ccCopyEntry|ccCopyUserName: value}
+    end
+
+    def ccCopyUserPassword do
+      ccCopyUserPassword(%CcCopyEntry{})
+    end
+    def ccCopyUserPassword(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.8",
+        :octet_string, ccCopyEntry.ccCopyUserPassword)
+    end
+    def ccCopyUserPassword(ccCopyEntry, value) do
+      %CcCopyEntry{ccCopyEntry|ccCopyUserPassword: value}
+    end
+
+    def ccCopyNotificationOnCompletion do
+      ccCopyNotificationOnCompletion(%CcCopyEntry{})
+    end
+    def ccCopyNotificationOnCompletion(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.9",
+        :integer, ccCopyEntry.ccCopyNotificationOnCompletion)
+    end
+    def ccCopyNotificationOnCompletion(ccCopyEntry, value) when value in 1..2 do
+      typeTruthValue
+        |> Map.fetch!(value)
+        |> (fn v ->
+          %CcCopyEntry{ccCopyEntry|ccCopyNotificationOnCompletion: v}
+        end).()
+    end
+
+    def ccCopyState do
+      ccCopyState(%CcCopyEntry{})
+    end
+    def ccCopyState(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.10",
+        :integer, ccCopyEntry.ccCopyState)
+    end
+    def ccCopyState(ccCopyEntry, value) do
+      typeConfigCopyState
+        |> Map.fetch!(value)
+        |> (fn v -> %CcCopyEntry{ccCopyEntry|ccCopyState: v} end).()
+    end
+
+    def ccCopyTimeStarted do
+      ccCopyTimeStarted(%CcCopyEntry{})
+    end
+    def ccCopyTimeStarted(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.11",
+        :octet_string, ccCopyEntry.ccCopyTimeStarted)
+    end
+    def ccCopyTimeStarted(ccCopyEntry, value) do
+      %CcCopyEntry{ccCopyEntry|ccCopyTimeStarted: value}
+    end
+
+    def ccCopyTimeCompleted do
+      ccCopyTimeCompleted(%CcCopyEntry{})
+    end
+    def ccCopyTimeCompleted(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.12",
+        :octet_string, ccCopyEntry.ccCopyTimeCompleted)
+    end
+    def ccCopyTimeCompleted(ccCopyEntry, value) do
+      %CcCopyEntry{ccCopyEntry|ccCopyTimeCompleted: value}
+    end
+
+    def ccCopyFailCause do
+      ccCopyFailCause(%CcCopyEntry{})
+    end
+    def ccCopyFailCause(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.13",
+        :integer, ccCopyEntry.ccCopyFailCause)
+    end
+    def ccCopyFailCause(ccCopyEntry, value) do
+      typeConfigCopyFailCause
+        |> Map.fetch!(value)
+        |> (fn v -> %CcCopyEntry{ccCopyEntry|ccCopyFailCause: v} end).()
+    end
+
+    def ccCopyEntryRowStatus do
+      ccCopyEntryRowStatus(%CcCopyEntry{})
+    end
+    def ccCopyEntryRowStatus(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.14",
+        :integer, ccCopyEntry.ccCopyEntryRowStatus)
+    end
+    def ccCopyEntryRowStatus(ccCopyEntry, value) do
+      typeRowStatus
+        |> Map.fetch!(value)
+        |> (fn v -> %CcCopyEntry{ccCopyEntry|ccCopyEntryRowStatus: v} end).()
+    end
+
+    def ccCopyServerAddressType do
+      ccCopyServerAddressType(%CcCopyEntry{})
+    end
+    def ccCopyServerAddressType(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.15",
+        :integer, ccCopyEntry.ccCopyServerAddressType)
+    end
+    def ccCopyServerAddressType(ccCopyEntry, value) do
+      typeInetAddressType
+        |> Map.fetch!(value)
+        |> (fn v -> %CcCopyEntry{ccCopyEntry|ccCopyServerAddressType: v} end).()
+    end
+
+    def ccCopyServerAddressRev1 do
+      ccCopyServerAddressRev1(%CcCopyEntry{})
+    end
+    def ccCopyServerAddressRev1(ccCopyEntry) do
+      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.16",
+        :octet_string, ccCopyEntry.ccCopyServerAddressRev1)
+    end
+    def ccCopyServerAddressRev1(ccCopyEntry, value) do
+      %CcCopyEntry{ccCopyEntry|ccCopyServerAddressRev1: value}
     end
   end
 
   @spec cc_copy_entry(atom, atom, atom, String.t, atom, String.t) :: CcCopyEntry.t
   def cc_copy_entry(proto, src_file_type, dst_file_type, filename, server_addr_type, server_addr) do
-    %CcCopyEntry{
-      ccCopyProtocol: CcCopyEntry.config_copy_proto_to_number(proto),
-      ccCopySourceFileType: CcCopyEntry.config_file_type_to_number(src_file_type),
-      ccCopyDestFileType: CcCopyEntry.config_file_type_to_number(dst_file_type),
-      ccCopyFileName: filename,
-      ccCopyServerAddressType: CcCopyEntry.inet_addr_type_to_number(server_addr_type),
-      ccCopyServerAddressRev1: server_addr,
-      ccCopyEntryRowStatus: CcCopyEntry.row_status_to_number(:create_and_go),
-      ccCopyState: CcCopyEntry.copy_state_to_number(:waiting),
-      ccCopyFailCause: CcCopyEntry.copy_fail_cause_to_number(:unknown)
-    }
+    %CcCopyEntry{}
+      |> CcCopyEntry.ccCopyProtocol(proto)
+      |> CcCopyEntry.ccCopySourceFileType(src_file_type)
+      |> CcCopyEntry.ccCopyDestFileType(dst_file_type)
+      |> CcCopyEntry.ccCopyFileName(filename)
+      |> CcCopyEntry.ccCopyServerAddressType(server_addr_type)
+      |> CcCopyEntry.ccCopyServerAddressRev1(server_addr)
+      |> CcCopyEntry.ccCopyEntryRowStatus(:create_and_go)
   end
 
-  @spec cc_copy_entry_to_snmp_objects(CcCopyEntry.t, pos_integer) :: [SNMP.Object.t]
-  def cc_copy_entry_to_snmp_objects(ccCopyEntry, row) do
+  def get_copy_state(row, agent, credential) do
+    result = CcCopyEntry.ccCopyState
+      |> SNMP.Object.index(row)
+      |> SNMP.get(agent, credential)
+
+    case result do
+      [ok: copy_state_obj] ->
+        copy_state_obj
+          |> SNMP.Object.value
+          |> String.to_integer
+      [error: _] ->
+        nil
+    end
+  end
+
+  def get_copy_fail_cause(row, agent, credential) do
+    result = CcCopyEntry.ccCopyFailCause
+      |> SNMP.Object.index(row)
+      |> SNMP.get(agent, credential)
+
+    case result do
+      [ok: copy_fail_cause_obj] ->
+        copy_fail_cause_obj
+          |> SNMP.Object.value
+          |> String.to_integer
+      [error: _] ->
+        nil
+    end
+  end
+
+  def await_copy_result(row, agent, credential) do
+    case get_copy_state(row, agent, credential) do
+      3 ->
+        :ok
+      4 ->
+        fail_cause = get_copy_fail_cause(row, agent, credential)
+          |> SNMP.Cisco.CcCopyEntry.typeConfigCopyFailCause
+
+        {:error, fail_cause}
+      _ ->
+        :timer.sleep 500 
+        await_copy_result(row, agent, credential)
+    end 
+  end
+
+  def destroy_copy_entry_row(row, agent, credential) do
+    [{:ok, _}] = CcCopyEntry.ccCopyEntryRowStatus
+      |> SNMP.Object.index(row)
+      |> SNMP.Object.value(6)
+      |> SNMP.set(agent, credential)
+  end
+
+  defp create_copy_entry_row(copy_entry, agent, credential) do
+    row = 1
     [
-      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.2.#{row}",
-        :integer, CcCopyEntry.protocol(ccCopyEntry)),
-      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.3.#{row}",
-        :integer, CcCopyEntry.source_file_type(ccCopyEntry)),
-      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.4.#{row}",
-        :integer, CcCopyEntry.dest_file_type(ccCopyEntry)),
-      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.6.#{row}",
-        :octet_string, CcCopyEntry.filename(ccCopyEntry)),
-      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.15.#{row}",
-        :integer, CcCopyEntry.server_address_type(ccCopyEntry)),
-      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.16.#{row}",
-        :octet_string, CcCopyEntry.server_address(ccCopyEntry)),
-      SNMP.object("1.3.6.1.4.1.9.9.96.1.1.1.1.14.#{row}",
-        :integer, CcCopyEntry.entry_row_status(ccCopyEntry))
-    ]
+      CcCopyEntry.ccCopyProtocol(copy_entry) |> SNMP.Object.index(row),
+      CcCopyEntry.ccCopySourceFileType(copy_entry) |> SNMP.Object.index(row),
+      CcCopyEntry.ccCopyDestFileType(copy_entry) |> SNMP.Object.index(row),
+      CcCopyEntry.ccCopyFileName(copy_entry) |> SNMP.Object.index(row),
+      CcCopyEntry.ccCopyServerAddressType(copy_entry) |> SNMP.Object.index(row),
+      CcCopyEntry.ccCopyServerAddressRev1(copy_entry) |> SNMP.Object.index(row),
+      CcCopyEntry.ccCopyEntryRowStatus(copy_entry) |> SNMP.Object.index(row)
+    ] |> SNMP.set(agent, credential)
+
+    row
+  end
+
+  def copy_tftp_run(tftp_server, file, agent, credential) do
+    row = cc_copy_entry(:tftp,
+        :network_file, :running_config, file,
+        :ipv4, tftp_server
+    ) |> create_copy_entry_row(agent, credential)
+    
+    :ok = await_copy_result(row, agent, credential)
+    destroy_copy_entry_row(row, agent, credential)
   end
 end
 

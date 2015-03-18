@@ -26,13 +26,34 @@ defmodule TFTP do
       |> get_tftp_error
   end
 
+  defp split_file_path(filepath) do
+    [file|dirs] = filepath
+      |> String.split("/")
+      |> Enum.reverse
+
+    case (dirs |> Enum.reverse |> Enum.join("/")) do
+      "" ->
+        {".", file}
+      path ->
+        {path, file}
+    end
+  end
+
   @spec get(String.t, :ascii | :binary) :: :ok | {:error, atom} | {:error, String.t}
-  def get(file, host, mode \\ :ascii) do
-    exec_tftp_cmd("get #{file}", host, mode)
+  def get(filepath, host, mode \\ :ascii) do
+    {path, file} = filepath
+      |> String.replace(~r/'/, "")
+      |> split_file_path
+
+    exec_tftp_cmd("get '#{path}/#{file}'", host, mode)
   end
 
   @spec put(String.t, :ascii | :binary) :: :ok | {:error, atom} | {:error, String.t}
-  def put(file, host, mode \\ :ascii) do
-    exec_tftp_cmd("put #{file}", host, mode)
+  def put(filepath, host, mode \\ :ascii) do
+    {path, file} = filepath
+      |> String.replace(~r/'/, "")
+      |> split_file_path
+
+    exec_tftp_cmd("put '#{path}/#{file}' /#{file}", host, mode)
   end
 end
