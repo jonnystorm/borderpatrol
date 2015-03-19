@@ -5,19 +5,19 @@
 
 defmodule BorderPatrol.REST do
   use Urna, allow: [
-              headers: true,
-              methods: true,
-              credentials: true,
-              origins: ["http://localhost:8888"]
+    headers: true,
+    methods: true,
+    credentials: true,
+    origins: ["http://localhost:8888"]
   ]
 
   resource :provision do
     post do
-      %{success: "Success"} |> reply 200
+      params |> reply 200
     end
   end
 
-  def start do
+  def start_link do
     Urna.start BorderPatrol.REST, port: 8080
   end
 end

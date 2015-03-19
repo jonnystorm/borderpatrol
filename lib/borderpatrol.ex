@@ -4,5 +4,18 @@
 # as published by Sam Hocevar. See the COPYING.WTFPL file for more details.
 
 defmodule BorderPatrol do
+  use Application
+
+  def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
+    children = [
+      worker(BorderPatrol.REST, []),
+      worker(BorderPatrol.Repo, [])
+    ]
+
+    opts = [strategy: :one_for_one, name: BorderPatrol.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
 end
 
