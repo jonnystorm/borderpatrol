@@ -3,9 +3,11 @@ defmodule Extensions.Inet do
 
   @behaviour Postgrex.Extension
 
+  def init(_parameters, _opts), do: nil
+
   def matching(_library), do: [type: "inet"]
 
-  def format(_library), do: :binary
+  def format(_library), do: :text
 
   def encode(%TypeInfo{type: "inet"}, binary, _state, _library), do: binary
 

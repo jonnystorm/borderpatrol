@@ -40,10 +40,10 @@ defmodule PCI do
     end
 
     @spec type(ICMP.t) :: non_neg_integer
-    def type(icmp), do: icmp.type
+    def type(pci), do: pci.type
 
     @spec code(ICMP.t) :: non_neg_integer
-    def code(icmp), do: icmp.code
+    def code(pci), do: pci.code
   end
 
   defmodule TCP do
@@ -98,26 +98,32 @@ defprotocol PCIProto do
   def and_mask(resource, mask)
   def equal?(resource, resource)
   def match?(resource, resource, mask)
+  def reflect(resource)
 end
 
 defimpl PCIProto, for: PCI.IPv4 do
   @spec and_mask(PCI.IPv4.t, PCI.IPv4.t) :: PCI.IPv4.t
   def and_mask(ip, ip_mask) do
     PCI.IPv4.new(
-      Vector.bit_and(PCI.IPv4.source(ip), PCI.IPv4.source(ip_mask)),
-      Vector.bit_and(PCI.IPv4.destination(ip), PCI.IPv4.destination(ip_mask))
+      Vector.bit_and(PCI.IP.source(ip), PCI.IP.source(ip_mask)),
+      Vector.bit_and(PCI.IP.destination(ip), PCI.IP.destination(ip_mask))
     )
   end
 
   @spec equal?(PCI.IPv4.t, PCI.IPv4.t) :: boolean
   def equal?(ip1, ip2) do
-    PCI.IPv4.source(ip1) == PCI.IPv4.source(ip2)
-      && PCI.IPv4.destination(ip1) == PCI.IPv4.destination(ip2)
+    PCI.IP.source(ip1) == PCI.IP.source(ip2)
+      && PCI.IP.destination(ip1) == PCI.IP.destination(ip2)
   end
 
   @spec match?(PCI.IPv4.t, PCI.IPv4.t, PCI.IPv4.t) :: boolean
   def match?(ip1, ip2, ip_mask) do
     and_mask(ip1, ip_mask) |> equal? and_mask(ip2, ip_mask)
+  end
+
+  @spec reflect(IPv4.t) :: IPv4.t
+  def reflect(pci) do
+    PCI.IP.new(PCI.IP.destination(pci), PCI.IP.source(pci))
   end
 end
 
@@ -125,20 +131,25 @@ defimpl PCIProto, for: PCI.IPv6 do
   @spec and_mask(PCI.IPv6.t, PCI.IPv6.t) :: PCI.IPv6.t
   def and_mask(ip, ip_mask) do
     PCI.IPv6.new(
-      Vector.bit_and(PCI.IPv6.source(ip), PCI.IPv6.source(ip_mask)),
-      Vector.bit_and(PCI.IPv6.destination(ip), PCI.IPv6.destination(ip_mask))
+      Vector.bit_and(PCI.IP.source(ip), PCI.IP.source(ip_mask)),
+      Vector.bit_and(PCI.IP.destination(ip), PCI.IP.destination(ip_mask))
     )
   end
 
   @spec equal?(PCI.IPv6.t, PCI.IPv6.t) :: boolean
   def equal?(ip1, ip2) do
-    PCI.IPv6.source(ip1) == PCI.IPv6.source(ip2)
-      && PCI.IPv6.destination(ip1) == PCI.IPv6.destination(ip2)
+    PCI.IP.source(ip1) == PCI.IP.source(ip2)
+      && PCI.IP.destination(ip1) == PCI.IP.destination(ip2)
   end
 
   @spec match?(PCI.IPv6.t, PCI.IPv6.t, PCI.IPv6.t) :: boolean
   def match?(ip1, ip2, ip_mask) do
     and_mask(ip1, ip_mask) |> equal? and_mask(ip2, ip_mask)
+  end
+
+  @spec reflect(IPv6.t) :: IPv6.t
+  def reflect(pci) do
+    PCI.IP.new(PCI.IP.destination(pci), PCI.IP.source(pci))
   end
 end
 
@@ -161,6 +172,20 @@ defimpl PCIProto, for: PCI.ICMP do
   def match?(icmp1, icmp2, icmp_mask) do
     and_mask(icmp1, icmp_mask) |> equal? and_mask(icmp2, icmp_mask)
   end
+
+  @spec reflect(ICMP.t) :: ICMP.t
+  def reflect(pci) do
+    case PCI.ICMP.type(pci) do
+      <<0>> ->
+        PCI.ICMP.new(<<8>>, <<0>>)
+      <<3>> ->
+        PCI.ICMP.new(<<8>>, <<0>>)
+      <<8>> ->
+        PCI.ICMP.new(<<0>>, <<0>>)
+      _ ->
+        pci
+    end
+  end
 end
 
 defimpl PCIProto, for: PCI.TCP do
@@ -182,6 +207,11 @@ defimpl PCIProto, for: PCI.TCP do
   def match?(tcp1, tcp2, tcp_mask) do
     and_mask(tcp1, tcp_mask) |> equal? and_mask(tcp2, tcp_mask)
   end
+
+  @spec reflect(TCP.t) :: TCP.t
+  def reflect(pci) do
+    PCI.TCP.new(PCI.TCP.destination(pci), PCI.TCP.source(pci))
+  end
 end
 
 defimpl PCIProto, for: PCI.UDP do
@@ -202,6 +232,11 @@ defimpl PCIProto, for: PCI.UDP do
   @spec match?(PCI.UDP.t, PCI.UDP.t, PCI.UDP.t) :: boolean
   def match?(udp1, udp2, udp_mask) do
     and_mask(udp1, udp_mask) |> equal? and_mask(udp2, udp_mask)
+  end
+
+  @spec reflect(UDP.t) :: UDP.t
+  def reflect(pci) do
+    PCI.UDP.new(PCI.UDP.destination(pci), PCI.UDP.source(pci))
   end
 end
 
