@@ -2,7 +2,7 @@ defmodule BorderPatrol.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :border_patrol,
+    [app: :borderpatrol,
      version: "0.0.1",
      elixir: "~> 1.0",
      deps: deps]
@@ -12,7 +12,8 @@ defmodule BorderPatrol.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger]]
+    [applications: [:logger, :ecto],
+     mod: {BorderPatrol, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -26,7 +27,9 @@ defmodule BorderPatrol.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [
-      {:urna, git: "https://github.com/meh/urna.git", ref: "fa2e99302c"}
+      {:urna, git: "https://github.com/meh/urna.git", ref: "fa2e99302c"},
+      {:ecto, git: "https://github.com/elixir-lang/ecto.git", ref: "6d490c4c35"},
+      {:postgrex, ">= 0.0.0"}
     ]
   end
 end

@@ -16,4 +16,10 @@ defmodule Util do
       |> :os.cmd
       |> :binary.list_to_bin
   end
+
+  def ipv4_regex do
+    octet = "(1?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"
+
+    ~r/^(#{octet}\.){3}#{octet}$/
+  end
 end
