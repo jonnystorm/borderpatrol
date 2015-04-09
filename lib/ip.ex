@@ -4,6 +4,8 @@
 # as published by Sam Hocevar. See the COPYING.WTFPL file for more details.
 
 defmodule IP do
+  # TODO: move version inference out of transforms
+
   @spec version_to_bits(4 | 6) :: 32 | 128
   def version_to_bits(4), do: 32
   def version_to_bits(6), do: 128

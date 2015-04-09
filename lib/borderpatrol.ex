@@ -11,7 +11,7 @@ defmodule BorderPatrol do
 
     children = [
       worker(BorderPatrol.REST, []),
-      worker(BorderPatrol.Repo, [])
+      worker(Repo, [])
     ]
 
     opts = [strategy: :one_for_one, name: BorderPatrol.Supervisor]

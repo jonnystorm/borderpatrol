@@ -4,8 +4,12 @@
   "exts": {:hex, :exts, "0.2.2"},
   "httprot": {:hex, :httprot, "0.1.5"},
   "jazz": {:hex, :jazz, "0.2.1"},
+  "linear_ex": {:git, "https://github.com/jonnystorm/linear-elixir.git", "4cca32d51a86c238b56b2b01c03bc50428bb8913", [ref: "4cca32d51a"]},
+  "net_snmp_ex": {:git, "https://github.com/jonnystorm/net-snmp-elixir.git", "809d2122f44511666aac370f3e884f15875380ce", [ref: "809d2122f4"]},
   "poolboy": {:hex, :poolboy, "1.4.2"},
   "postgrex": {:hex, :postgrex, "0.8.0"},
   "reagent": {:hex, :reagent, "0.1.5"},
+  "snmp_mib_ex": {:git, "https://github.com/jonnystorm/snmp-mib-elixir.git", "a64115af595e16556a4842a216f4b6432eb42763", [ref: "a64115af59"]},
   "socket": {:hex, :socket, "0.2.8"},
+  "tftp_ex": {:git, "https://github.com/jonnystorm/tftp-elixir.git", "20879d1364b379fe13c682b9a4a9afe2b5c7bb62", [ref: "20879d1364"]},
   "urna": {:git, "https://github.com/meh/urna.git", "fa2e99302c1616f898c08c06054df1098a621345", [ref: "fa2e99302c"]}}

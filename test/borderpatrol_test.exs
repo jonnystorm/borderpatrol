@@ -28,4 +28,13 @@ defmodule BorderPatrolTest do
 
   #  SNMP.Cisco.copy_tftp_run("192.0.2.1", "scrap.cfg", test_agent, test_cred)
   #end
+
+  #test "db things" do
+  #  edge_dev = EdgeDevice.create(0, %{hostname: "stuff", ip_addr: "192.0.2.10"})
+  #  edge_if = EdgeInterface.create(0, %{name: "Gi1/0/1"})
+  #  EdgeInterfaceToEdgeDevice.create(0,
+  #    %{edge_interface_id: edge_if.id, edge_device_id: edge_dev.id}
+  #  )
+  #  BorderPatrol.Repo.all(from d in EdgeDevice, select: d, preload: :edge_interfaces)
+  #end
 end
