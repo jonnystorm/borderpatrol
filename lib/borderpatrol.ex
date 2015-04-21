@@ -11,11 +11,12 @@ defmodule BorderPatrol do
 
     children = [
       worker(BorderPatrol.REST, []),
-      worker(Repo, [])
+      worker(BorderPatrol.Repo, []),
+      worker(BorderPatrol.Director, [])
     ]
 
     opts = [strategy: :one_for_one, name: BorderPatrol.Supervisor]
-    Supervisor.start_link(children, opts)
+    {:ok, _pid} = Supervisor.start_link(children, opts)
   end
 end
 

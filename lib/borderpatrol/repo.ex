@@ -1,7 +1,31 @@
-defmodule Repo do
+defmodule BorderPatrol.Repo do
   use Ecto.Repo, otp_app: :borderpatrol
 
+  alias BorderPatrol.Repo, as: Repo
+
   import Ecto.Query
+
+  def find_unstarted_jobs do
+    Repo.all(from j in Job, where: is_nil(j.started), select: j,
+      preload: [:edge_interface, :submitted_by])
+  end
+
+  def find_jobs(params) do
+    query = from j in Job
+
+    if started = params["started"] do
+      query = from j in query, where: j.started == ^started
+    end
+
+    if ended = params["ended"] do
+      query = from j in query, where: j.ended == ^ended
+    end
+
+    query = from j in query, select: j,
+      preload: [:edge_interface, :submitted_by]
+
+    Repo.all(query)
+  end
 
   def get_edge_interface(id) do
     query = from e in EdgeInterface,
@@ -156,6 +180,9 @@ end
 defmodule EdgeDevice do
   use Ecto.Model
 
+  alias BorderPatrol.Repo, as: Repo
+  alias BorderPatrol.Util, as: Util
+
   schema "edge_devices" do
     field :hostname
     field :ip_addr
@@ -187,6 +214,8 @@ end
 
 defmodule EdgeInterface do
   use Ecto.Model
+
+  alias BorderPatrol.Repo, as: Repo
 
   schema "edge_interfaces" do
     field :name
@@ -220,6 +249,9 @@ end
 
 defmodule Endpoint do
   use Ecto.Model
+
+  alias BorderPatrol.Repo, as: Repo
+  alias BorderPatrol.Util, as: Util
 
   schema "endpoints" do
     field :name
@@ -262,6 +294,8 @@ end
 defmodule BorderProfile do
   use Ecto.Model
 
+  alias BorderPatrol.Repo, as: Repo
+
   schema "border_profiles" do
     field :name
     field :module
@@ -292,6 +326,8 @@ end
 defmodule EndpointToBorderProfile do
   use Ecto.Model
 
+  alias BorderPatrol.Repo, as: Repo
+
   schema "endpoint_to_border_profile" do
     belongs_to :endpoint, Endpoint
     belongs_to :border_profile, BorderProfile
@@ -320,6 +356,8 @@ end
 defmodule EdgeInterfaceToEndpoint do
   use Ecto.Model
 
+  alias BorderPatrol.Repo, as: Repo
+
   schema "edge_interface_to_endpoint" do
     belongs_to :edge_interface, EdgeInterface
     belongs_to :endpoint, Endpoint
@@ -344,6 +382,8 @@ end
 
 defmodule EdgeInterfaceToEdgeDevice do
   use Ecto.Model
+
+  alias BorderPatrol.Repo, as: Repo
 
   schema "edge_interface_to_edge_device" do
     belongs_to :edge_interface, EdgeInterface
@@ -370,6 +410,8 @@ end
 defmodule User do
   use Ecto.Model
 
+  alias BorderPatrol.Repo, as: Repo
+
   schema "users" do
     field :name, :string, size: 255
     has_many :jobs, Job
@@ -394,22 +436,27 @@ end
 defmodule Job do
   use Ecto.Model
 
+  alias BorderPatrol.Repo, as: Repo
+  alias BorderPatrol.Util, as: Util
+
   schema "jobs" do
     field :ticket, :integer
     belongs_to :edge_interface, EdgeInterface
     belongs_to :submitted_by, User
     field :created, Ecto.DateTime, default: Ecto.DateTime.utc
+    field :started, Ecto.DateTime
     field :ended, Ecto.DateTime
     field :result, :integer
   end
 
   def changeset(job, params \\ nil) do
     job
-      |> cast(params, ~w(ticket edge_interface submitted_by created ended result))
+      |> cast(params, ~w(ticket edge_interface submitted_by created started ended result))
       |> validate_inclusion(:ticket, 1..2147483647)
       |> validate_inclusion(:edge_interface, 1..2147483647)
       |> validate_inclusion(:submitted_by, 1..2147483647)
       |> validate_format(:created, Util.iso_8601_regex)
+      |> validate_format(:started, Util.iso_8601_regex)
       |> validate_format(:ended, Util.iso_8601_regex)
       |> validate_inclusion(:result, 1..2147483647)
   end

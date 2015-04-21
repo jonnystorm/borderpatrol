@@ -9,9 +9,10 @@ defmodule BorderPatrol.Repo.Migrations.CreateJobs do
   def up do
     create table(:jobs) do
       add :ticket, :integer
-      add :edge_interface, references(:edge_interfaces)
-      add :submitted_by, references(:users)
+      add :edge_interface_id, references(:edge_interfaces)
+      add :submitted_by_id, references(:users)
       add :created, :datetime
+      add :started, :datetime
       add :ended, :datetime
       add :result, :integer
     end

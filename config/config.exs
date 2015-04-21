@@ -1,6 +1,6 @@
 use Mix.Config
 
-config :borderpatrol, Repo,
+config :borderpatrol, BorderPatrol.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "borderpatrol",
   username: "borderpatrol",

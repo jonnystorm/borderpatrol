@@ -3,7 +3,7 @@
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See the COPYING.WTFPL file for more details.
 
-defmodule Util do
+defmodule BorderPatrol.Util do
   def ipv4_regex do
     octet = "(1?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])"
 
