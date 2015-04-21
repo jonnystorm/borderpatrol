@@ -21,11 +21,4 @@ defmodule Util do
 
     ~r/^#{year_str}T#{time_str}#{offset_str}$/
   end
-
-  def flat_zip(list1, list2) do
-    list1
-      |> Enum.zip(list2)
-      |> Enum.map(&(Tuple.to_list &1))
-      |> List.flatten
-  end
 end
