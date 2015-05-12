@@ -9,7 +9,9 @@ defmodule BorderPatrol.REST do
     methods: true,
     credentials: true,
     origins: ["http://localhost:8888"]
-  ], adapters: [Urna.JSON, Urna.Form]
+  ], adapters: [BorderPatrol.APIv1, Urna.JSON, Urna.Form]
+
+  alias BorderPatrol.Repo, as: Repo
 
   resource :provision do
     post do

@@ -14,12 +14,8 @@ defmodule BorderPatrol.Mixfile do
 
   defp deps do
     [
-      {:urna, git: "https://github.com/meh/urna.git", ref: "fa2e99302c"},
-      {
-        :ecto,
-        git: "https://github.com/elixir-lang/ecto.git",
-        ref: "6d490c4c35"
-      },
+      {:urna, git: "https://github.com/meh/urna"},
+      {:ecto, git: "https://github.com/elixir-lang/ecto"},
       {:postgrex, ">= 0.0.0"},
       {:cisco_snmp_ex, git: "https://github.com/jonnystorm/cisco-snmp-elixir"},
       {:tftp_ex, git: "https://github.com/jonnystorm/tftp-elixir"},
