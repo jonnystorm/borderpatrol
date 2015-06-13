@@ -48,7 +48,7 @@ defmodule BorderPatrol.REST do
 
       params
         |> Repo.find_endpoints
-        |> Enum.map(fn s -> s |> Map.from_struct |> Map.delete(:__meta__) end)
+        #|> Enum.map(fn s -> s |> Map.from_struct |> Map.delete(:__meta__) end)
         |> Enum.map(fn m ->
           %{id: m.id, name: m.name, ip: m.ip_addr, mac: m.mac_addr}
         end)
@@ -78,7 +78,7 @@ defmodule BorderPatrol.REST do
     end
   end
 
-  resource :edge_devices do
+  resource :devices do
     get id do
       id
         |> Repo.get_edge_device
@@ -100,7 +100,7 @@ defmodule BorderPatrol.REST do
     end
   end
 
-  resource :edge_interfaces do
+  resource :interfaces do
     get id do
       id
         |> Repo.get_edge_interface
@@ -112,6 +112,10 @@ defmodule BorderPatrol.REST do
       cond do
         name = query["name"] ->
           Repo.find_edge_interfaces(name: name)
+            |> Enum.map(&(Map.from_struct &1))
+            |> reply 200
+        true ->
+          Repo.find_edge_interfaces(%{})
             |> Enum.map(&(Map.from_struct &1))
             |> reply 200
       end
@@ -130,6 +134,32 @@ defmodule BorderPatrol.REST do
       cond do
         name = query["name"] ->
           Repo.find_border_profiles(name: name)
+            |> Enum.map(&(Map.from_struct &1))
+            |> reply 200
+        true ->
+          Repo.find_border_profiles(%{})
+            |> Enum.map(&(Map.from_struct &1))
+            |> reply 200
+      end
+    end
+  end
+
+  resource :jobs do
+    get id do
+      id
+        |> Repo.get_job
+        |> Map.from_struct
+        |> reply 200
+    end
+
+    get do
+      cond do
+        ticket = query["ticket"] ->
+          Repo.find_jobs(%{"ticket" => ticket})
+            |> Enum.map(&(Map.from_struct &1))
+            |> reply 200
+        true ->
+          Repo.find_jobs(%{})
             |> Enum.map(&(Map.from_struct &1))
             |> reply 200
       end
