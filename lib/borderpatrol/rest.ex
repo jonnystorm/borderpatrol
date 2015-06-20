@@ -16,11 +16,11 @@ defmodule BorderPatrol.REST do
   resource :provision do
     post do
       endpoint = Repo.find_endpoints(params["endpointName"])
-        || Repo.add_endpoint(
-          params["endpointName"],
-          params["endpointIp"],
-          params["endpointMac"]
-        )
+      || Repo.add_endpoint(
+        params["endpointName"],
+        params["endpointIp"],
+        params["endpointMac"]
+      )
       profile = Repo.get_border_profile(params["borderProfile"])
       edge_dev = Repo.get_edge_device(params["edgeDevice"])
       edge_if = Repo.get_edge_interface(params["edgeInterface"])
@@ -32,12 +32,12 @@ defmodule BorderPatrol.REST do
   resource :endpoints do
     get id do
       if endpoint = Repo.get_endpoint(id) do
-        endpoint
-          |> (fn s -> s |> Map.from_struct |> Map.delete(:__meta__) end).()
-          |> (fn m ->
-            %{id: m.id, name: m.name, ip: m.ip_addr, mac: m.mac_addr}
-          end).()
-          |> reply 200
+        %{
+          id: endpoint.id,
+          name: endpoint.name,
+          ip: endpoint.ip_addr,
+          mac: endpoint.mac_addr
+        } |> reply 200
       else
         fail 404
       end
