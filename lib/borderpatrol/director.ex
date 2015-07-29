@@ -95,12 +95,12 @@ defmodule BorderPatrol.Director do
 
   defp watch_jobs(tftp_server, snmp_credential) do
     job = get_next_job |> start_job
-    try do
-      execute_job(job, tftp_server, snmp_credential)
-      end_job(job, 0)
-    rescue
-      e ->
-        IO.inspect e
+    spawn_monitor fn -> execute_job(job, tftp_server, snmp_credential) end
+
+    receive do
+      {:DOWN, _, _, :normal} ->
+        end_job(job, 0)
+      _ ->
         end_job(job, 1)
     end
 
