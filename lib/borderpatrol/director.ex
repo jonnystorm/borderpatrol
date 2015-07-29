@@ -86,7 +86,7 @@ defmodule BorderPatrol.Director do
 
   defp receive_down do
     receive do
-      {:DOWN, _, _, result} ->
+      {:DOWN, _, _, _, result} ->
         result
       _ ->
         nil
@@ -100,7 +100,7 @@ defmodule BorderPatrol.Director do
     case receive_down do
       :normal ->
         end_job(job, 0)
-      %File.Error{reason: :eexist} ->
+      {%File.Error{reason: :eexist}, _} ->
         end_job(job, 2)
       _ ->
         end_job(job, 1)
