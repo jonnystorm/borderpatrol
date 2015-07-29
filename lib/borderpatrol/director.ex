@@ -76,11 +76,11 @@ defmodule BorderPatrol.Director do
   end
 
   defp start_job(job) do
-    Repo.update(%{job|started: Ecto.DateTime.utc})
+    Repo.update!(%{job|started: Ecto.DateTime.utc})
   end
 
   defp end_job(job, result) do
-    Repo.update(%{job|ended: Ecto.DateTime.utc, result: result})
+    Repo.update!(%{job|ended: Ecto.DateTime.utc, result: result})
   end
 
   defp get_next_job do
