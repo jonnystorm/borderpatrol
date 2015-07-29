@@ -37,7 +37,7 @@ defmodule BorderPatrol.Director do
     rescue
       _ in MatchError ->
         raise File.Error,
-          exception: "Temp file already exists: #{filename}.cfg"
+          message: "Temp file already exists: #{filename}.cfg"
     end
 
     temp_path
