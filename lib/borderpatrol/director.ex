@@ -30,7 +30,7 @@ defmodule BorderPatrol.Director do
   end
 
   defp get_temp_file(filename) do
-    temp_path = Path.join(System.tmp_dir!, filename)
+    Path.join(System.tmp_dir!, filename)
   end
 
   defp execute_job(job, tftp_server, snmp_credential) do
