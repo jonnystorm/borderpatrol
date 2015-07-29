@@ -84,13 +84,24 @@ defmodule BorderPatrol.Director do
     end
   end
 
+  defp receive_down do
+    receive do
+      {:DOWN, _, _, result} ->
+        result
+      _ ->
+        nil
+    end
+  end
+
   defp watch_jobs(tftp_server, snmp_credential) do
     job = get_next_job |> start_job
     spawn_monitor fn -> execute_job(job, tftp_server, snmp_credential) end
 
-    receive do
-      {:DOWN, _, _, :normal} ->
+    case receive_down do
+      :normal ->
         end_job(job, 0)
+      %File.Error{reason: :eexist} ->
+        end_job(job, 2)
       _ ->
         end_job(job, 1)
     end
