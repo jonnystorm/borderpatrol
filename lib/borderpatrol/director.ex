@@ -31,24 +31,11 @@ defmodule BorderPatrol.Director do
 
   defp get_temp_file(filename) do
     temp_path = Path.join(System.tmp_dir!, filename)
-
-    try do
-      false = File.exists?(temp_path)
-    rescue
-      _ in MatchError ->
-        raise File.Error,
-          message: "Temp file already exists: #{filename}.cfg"
-    end
-
-    temp_path
   end
 
   defp execute_job(job, tftp_server, snmp_credential) do
     edge_if = Repo.get_edge_interface(job.edge_interface.id)
     edge_dev = edge_if.edge_device
-    cfg_file_name = "#{edge_dev.ip_addr}.cfg"
-
-    cfg_local_path = get_temp_file(cfg_file_name)
 
     acl_base_name = edge_if.name
     |> String.replace("/", "_")
@@ -63,8 +50,11 @@ defmodule BorderPatrol.Director do
     |> ACL.reflect
     |> ACL.name("bp_#{acl_base_name}_offer")
 
+    cfg_file_name = "#{edge_dev.ip_addr}.cfg"
+    cfg_local_path = get_temp_file(cfg_file_name)
+
     generate_configuration(accept, offer, edge_if.name)
-    |> BorderPatrol.IO.write_to_file!(cfg_local_path)
+    |> BorderPatrol.IO.write_to_file!(cfg_local_path, [:exclusive])
     
     :ok = TFTP.put(cfg_local_path, tftp_server, :binary)
     
@@ -85,6 +75,7 @@ defmodule BorderPatrol.Director do
 
   defp get_next_job do
     :timer.sleep(1000)
+
     case Repo.find_unstarted_jobs do
       [job|_] ->
         job
