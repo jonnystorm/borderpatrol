@@ -51,19 +51,20 @@ defmodule BorderPatrol.Director do
     cfg_local_path = get_temp_file(cfg_file_name)
 
     acl_base_name = edge_if.name
-      |> String.replace("/", "_")
-      |> String.downcase
+    |> String.replace("/", "_")
+    |> String.downcase
 
     accept = edge_if.endpoints
-      |> generate_acls
-      |> ACL.concat
-      |> ACL.name("bp_#{acl_base_name}_accept")
+    |> generate_acls
+    |> ACL.concat
+    |> ACL.name("bp_#{acl_base_name}_accept")
+
     offer = accept
-      |> ACL.reflect
-      |> ACL.name("bp_#{acl_base_name}_offer")
+    |> ACL.reflect
+    |> ACL.name("bp_#{acl_base_name}_offer")
 
     generate_configuration(accept, offer, edge_if.name)
-      |> BorderPatrol.IO.write_to_file!(cfg_local_path)
+    |> BorderPatrol.IO.write_to_file!(cfg_local_path)
     
     :ok = TFTP.put(cfg_local_path, tftp_server, :binary)
     
@@ -98,7 +99,9 @@ defmodule BorderPatrol.Director do
       execute_job(job, tftp_server, snmp_credential)
       end_job(job, 0)
     rescue
-      _ -> end_job(job, 1)
+      e ->
+        IO.inspect e
+        end_job(job, 1)
     end
 
     watch_jobs(tftp_server, snmp_credential)
