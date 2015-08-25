@@ -58,7 +58,7 @@ defmodule BorderPatrol.Director do
     
     :ok = TFTP.put(cfg_local_path, tftp_server, :binary)
     
-    snmp_agent = NetSNMP.agent(edge_dev.ip_addr)
+    snmp_agent = Pathname.new(edge_dev.ip_addr)
     CiscoSNMP.copy_tftp_run(tftp_server, cfg_file_name, snmp_agent, snmp_credential)
     CiscoSNMP.copy_run_start(snmp_agent, snmp_credential)
     
