@@ -196,8 +196,8 @@ defmodule EdgeDevice do
       |> cast(params, ~w(hostname ip_addr))
       |> validate_format(:hostname, ~r/^[a-zA-Z0-9][a-zA-Z0-9\-\._]*$/)
       |> validate_format(:ip_addr, Util.ipv4_regex)
-      |> validate_unique(:hostname, on: Repo)
-      |> validate_unique(:ip_addr, on: Repo)
+      |> unique_constraint(:hostname, on: Repo)
+      |> unique_constraint(:ip_addr, on: Repo)
   end
 
   def create(_id, params) do
@@ -232,7 +232,7 @@ defmodule EdgeInterface do
     edge_interface
       |> cast(params, ~w(name))
       |> validate_format(:name, ~r/^[a-zA-Z][a-zA-Z0-9\-\._\/]*$/)
-      |> validate_unique(:name, on: Repo)
+      |> unique_constraint(:name, on: Repo)
   end
 
   def create(_id, params) do
@@ -271,7 +271,7 @@ defmodule Endpoint do
       |> validate_format(:name, ~r/^[a-zA-Z0-9\-\._\(\)]+$/)
       |> validate_format(:ip_addr, Util.ipv4_regex)
       |> validate_format(:mac_addr, Util.mac_regex)
-      |> validate_unique(:name, on: Repo)
+      |> unique_constraint(:name, on: Repo)
   end
 
   def create(params) do
@@ -368,7 +368,7 @@ defmodule EdgeInterfaceToEndpoint do
       |> cast(params, ~w(edge_interface_id endpoint_id))
       |> validate_inclusion(:edge_interface_id, 1..2147483647)
       |> validate_inclusion(:endpoint_id, 1..2147483647)
-      |> validate_unique(:endpoint_id, on: Repo)
+      |> unique_constraint(:endpoint_id, on: Repo)
   end
 
   def create(_id, params) do
@@ -395,7 +395,7 @@ defmodule EdgeInterfaceToEdgeDevice do
       |> cast(params, ~w(edge_interface_id edge_device_id))
       |> validate_inclusion(:edge_interface_id, 1..2147483647)
       |> validate_inclusion(:edge_device_id, 1..2147483647)
-      |> validate_unique(:edge_interface_id, on: Repo)
+      |> unique_constraint(:edge_interface_id, on: Repo)
   end
 
   def create(_id, params) do
@@ -421,7 +421,7 @@ defmodule User do
     user
       |> cast(params, ~w(name))
       |> validate_format(:name, ~r/^[a-zA-Z][a-zA-Z0-9\-\._]*$/)
-      |> validate_unique(:name, on: Repo)
+      |> unique_constraint(:name, on: Repo)
   end
 
   def create(_id, params) do
