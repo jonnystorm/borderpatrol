@@ -1,4 +1,4 @@
-%{"acl_ex": {:git, "https://github.com/jonnystorm/acl-elixir", "b8a219d2f8e80809f1dd93ec28b2cb1a3dbe50f0", []},
+%{"acl_ex": {:git, "https://github.com/jonnystorm/acl-elixir", "ca2d28aa2eeaef2e70c8f3dcbaee0ebaca821a58", []},
   "amrita": {:git, "https://github.com/josephwilk/amrita", "f51ae5225fb77ed0238e29fc80dbfa95e77c3ceb", []},
   "cauldron": {:hex, :cauldron, "0.1.5"},
   "cisco_config_copy_ex": {:git, "https://github.com/jonnystorm/cisco-config-copy-elixir", "3ee6b302af924a068a8bf468f6d295a5ddf28f85", []},
