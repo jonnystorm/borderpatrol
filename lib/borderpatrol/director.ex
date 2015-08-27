@@ -123,7 +123,7 @@ defmodule BorderPatrol.Director do
         end_job job, 6
 
       msg ->
-        Logger.warn "Received unknown error from job #{job}: #{inspect msg}"
+        Logger.warn "Received unknown error from job #{job.id}: #{inspect msg}"
 
         end_job job, 1
     end
