@@ -14,7 +14,8 @@ defmodule BorderPatrol.Mixfile do
 
   defp deps do
     [
-      {:urna, git: "https://github.com/meh/urna"},
+      {:urna, "~> 0.1.4"},
+      {:cauldron, "~> 0.1.5"},
       {:ecto, "~> 1.0.0"},
       {:postgrex, ">= 0.0.0"},
       {:cisco_snmp_ex, git: "https://github.com/jonnystorm/cisco-snmp-elixir"},
