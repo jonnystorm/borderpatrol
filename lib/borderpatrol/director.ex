@@ -119,8 +119,12 @@ defmodule BorderPatrol.Director do
         end_job job, 5
 
       # unable to set copy entry row status
-      {{:badmatch, [error: :snmp_err_wrongvalue]}, _} ->
+      {{:badmatch, {:error, :snmp_err_wrongvalue}}, _} ->
         end_job job, 6
+
+      # an SNMP operation failed
+      {{:badmatch, []}, _} ->
+        end_job job, 7
 
       msg ->
         Logger.warn "Received unknown error from job #{job.id}: #{inspect msg}"
