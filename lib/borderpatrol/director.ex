@@ -6,6 +6,8 @@
 defmodule BorderPatrol.Director do
   use GenServer
 
+  require Logger
+
   alias BorderPatrol.Repo, as: Repo
 
   defp generate_acls(endpoints) do
@@ -57,12 +59,11 @@ defmodule BorderPatrol.Director do
     |> BorderPatrol.IO.write_to_file!(cfg_local_path, [:exclusive])
     
     :ok = TFTP.put(cfg_local_path, tftp_server, :binary)
+    File.rm! cfg_local_path
     
     snmp_agent = Pathname.new(edge_dev.ip_addr)
     CiscoSNMP.copy_tftp_run(tftp_server, cfg_file_name, snmp_agent, snmp_credential)
     CiscoSNMP.copy_run_start(snmp_agent, snmp_credential)
-    
-    File.rm! cfg_local_path
   end
 
   defp start_job(job) do
@@ -99,11 +100,32 @@ defmodule BorderPatrol.Director do
 
     case receive_down do
       :normal ->
-        end_job(job, 0)
+        end_job job, 0
+
+      # a configuration file of the same name already exists
       {%File.Error{reason: :eexist}, _} ->
-        end_job(job, 2)
-      _ ->
-        end_job(job, 1)
+        end_job job, 2
+
+      # TFTP connection timed out
+      {{:badmatch, {:error, :etimedout}}, _} ->
+        end_job job, 3
+
+      # the configuration file does not exist on the TFTP server
+      {{:badmatch, {:error, :enoent}}, _} ->
+        end_job job, 4
+
+      # the TFTP server does not have correct permissions set
+      {{:badmatch, {:error, "Error code 0: Permission denied"}}, _} ->
+        end_job job, 5
+
+      # unable to set copy entry row status
+      {{:badmatch, [error: :snmp_err_wrongvalue]}, _} ->
+        end_job job, 6
+
+      msg ->
+        Logger.warn "Received unknown error from job #{job}: #{inspect msg}"
+
+        end_job job, 1
     end
 
     watch_jobs(tftp_server, snmp_credential)
