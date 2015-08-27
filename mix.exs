@@ -19,8 +19,7 @@ defmodule BorderPatrol.Mixfile do
       {:postgrex, ">= 0.0.0"},
       {:cisco_snmp_ex, git: "https://github.com/jonnystorm/cisco-snmp-elixir"},
       {:tftp_ex, git: "https://github.com/jonnystorm/tftp-elixir"},
-      {:acl_ex, git: "https://github.com/jonnystorm/acl-elixir"},
-      {:pathname_ex, git: "https://github.com/jonnystorm/pathname-elixir"}
+      {:acl_ex, git: "https://github.com/jonnystorm/acl-elixir"}
     ]
   end
 end
