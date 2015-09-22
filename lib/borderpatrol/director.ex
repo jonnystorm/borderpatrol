@@ -35,6 +35,16 @@ defmodule BorderPatrol.Director do
     Path.join(System.tmp_dir!, filename)
   end
 
+  defp getaddr!(host) do
+    case (host |> :binary.bin_to_list |> :inet.getaddr) do
+      {:ok, address} ->
+        address
+
+      {:error, _} ->
+        raise RuntimeError, "Unable to resolve '#{host}'"
+    end
+  end
+
   defp execute_job(job, tftp_server, snmp_credential) do
     edge_if = Repo.get_edge_interface(job.edge_interface.id)
     edge_dev = edge_if.edge_device
@@ -58,11 +68,20 @@ defmodule BorderPatrol.Director do
     generate_configuration(accept, offer, edge_if.name)
     |> BorderPatrol.IO.write_to_file!(cfg_local_path, [:exclusive])
     
-    :ok = TFTP.put(cfg_local_path, tftp_server, :binary)
+    tftp_server_address = getaddr! tftp_server
+
+    :ok = TFTP.put(cfg_local_path, tftp_server_address, :binary)
     File.rm! cfg_local_path
     
     snmp_agent = Pathname.new(edge_dev.ip_addr)
-    CiscoSNMP.copy_tftp_run(tftp_server, cfg_file_name, snmp_agent, snmp_credential)
+
+    CiscoSNMP.copy_tftp_run(
+      tftp_server_address,
+      cfg_file_name,
+      snmp_agent,
+      snmp_credential
+    )
+
     CiscoSNMP.copy_run_start(snmp_agent, snmp_credential)
   end
 
