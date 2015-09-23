@@ -37,8 +37,11 @@ defmodule BorderPatrol.Director do
 
   defp getaddr!(host) do
     case (host |> :binary.bin_to_list |> :inet.getaddr(:inet)) do
-      {:ok, {address}} ->
-        address
+      {:ok, addr_tuple} ->
+        addr_tuple
+        |> Tuple.to_list
+        |> Enum.map(&Integer.to_string(&1))
+        |> Enum.join(".")
 
       {:error, _} ->
         raise RuntimeError, "Unable to resolve '#{host}'"
