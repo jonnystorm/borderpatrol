@@ -37,7 +37,7 @@ defmodule BorderPatrol.Director do
 
   defp getaddr!(host) do
     case (host |> :binary.bin_to_list |> :inet.getaddr(:inet)) do
-      {:ok, address} ->
+      {:ok, {address}} ->
         address
 
       {:error, _} ->
