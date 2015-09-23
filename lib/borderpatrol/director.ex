@@ -148,9 +148,12 @@ defmodule BorderPatrol.Director do
       {{:badmatch, []}, _} ->
         end_job job, 7
 
-      # config copy timed out; may have been partially applied
+      # config copy timed out
       {{:badmatch, {:error, :timeout}}, _} ->
         end_job job, 8
+
+      {{:badmatch, [error: :snmp_err_inconsistentvalue]}, _}
+        end_job job, 9
 
       msg ->
         Logger.warn "Received unknown error from job #{job.id}: #{inspect msg}"
