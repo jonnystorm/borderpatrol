@@ -148,6 +148,10 @@ defmodule BorderPatrol.Director do
       {{:badmatch, []}, _} ->
         end_job job, 7
 
+      # config copy timed out; may have been partially applied
+      {{:badmatch, {:error, :timeout}} ->
+        end_job job, 8
+
       msg ->
         Logger.warn "Received unknown error from job #{job.id}: #{inspect msg}"
 
