@@ -149,7 +149,7 @@ defmodule BorderPatrol.Director do
         end_job job, 7
 
       # config copy timed out; may have been partially applied
-      {{:badmatch, {:error, :timeout}} ->
+      {{:badmatch, {:error, :timeout}}, _} ->
         end_job job, 8
 
       msg ->
