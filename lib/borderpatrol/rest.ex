@@ -47,26 +47,28 @@ defmodule BorderPatrol.REST do
       params = uri.query && query || %{}
 
       params
-        |> Repo.find_endpoints
-        #|> Enum.map(fn s -> s |> Map.from_struct |> Map.delete(:__meta__) end)
-        |> Enum.map(fn m ->
-          %{id: m.id, name: m.name, ip: m.ip_addr, mac: m.mac_addr}
-        end)
-        |> reply 200
+      |> Repo.find_endpoints
+      #|> Enum.map(fn s -> s |> Map.from_struct |> Map.delete(:__meta__) end)
+      |> Enum.map(fn m ->
+        %{id: m.id, name: m.name, ip: m.ip_addr, mac: m.mac_addr}
+      end)
+      |> reply 200
     end
 
     put id do
       (for {k, v} <- params, into: %{}, do: {String.to_atom(k), v})
-        |> Repo.update_endpoint(id)
+      |> Repo.update_endpoint(id)
+
       profiles = params
-        |> Enum.reduce([], fn
-          ({"profile", v}, acc) ->
-            [v|acc]
-          (_, acc) ->
-            acc
-        end)
-      Repo.assign_profiles(id, profiles)
-        |> reply 200
+      |> Enum.reduce([], fn
+        ({"profile", v}, acc) ->
+          [v|acc]
+
+        (_, acc) ->
+          acc
+      end)
+
+      Repo.assign_profiles(id, profiles) |> reply 200
     end
 
     post do
@@ -81,21 +83,23 @@ defmodule BorderPatrol.REST do
   resource :devices do
     get id do
       id
-        |> Repo.get_edge_device
-        |> Map.from_struct
-        |> reply 200
+      |> Repo.get_edge_device
+      |> Map.from_struct
+      |> reply 200
     end
 
     get do
       cond do
         name = query["name"] ->
-          Repo.find_edge_devices(name: name)
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          [name: name]
+          |> Repo.find_edge_devices
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
         ip = query["ip"] ->
-          Repo.find_edge_devices(ip: ip)
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          [ip: ip]
+          |> Repo.find_edge_devices
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
       end
     end
   end
@@ -103,21 +107,23 @@ defmodule BorderPatrol.REST do
   resource :interfaces do
     get id do
       id
-        |> Repo.get_edge_interface
-        |> Map.from_struct
-        |> reply 200
+      |> Repo.get_edge_interface
+      |> Map.from_struct
+      |> reply 200
     end
 
     get do
       cond do
         name = query["name"] ->
-          Repo.find_edge_interfaces(name: name)
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          [name: name]
+          |> Repo.find_edge_interfaces
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
         true ->
-          Repo.find_edge_interfaces(%{})
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          %{}
+          |> Repo.find_edge_interfaces
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
       end
     end
   end
@@ -125,21 +131,23 @@ defmodule BorderPatrol.REST do
   resource :profiles do
     get id do
       id
-        |> Repo.get_border_profile
-        |> Map.from_struct
-        |> reply 200
+      |> Repo.get_border_profile
+      |> Map.from_struct
+      |> reply 200
     end
 
     get do
       cond do
         name = query["name"] ->
-          Repo.find_border_profiles(name: name)
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          [name: name]
+          |> Repo.find_border_profiles
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
         true ->
-          Repo.find_border_profiles(%{})
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          %{}
+          |> Repo.find_border_profiles
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
       end
     end
   end
@@ -147,21 +155,23 @@ defmodule BorderPatrol.REST do
   resource :jobs do
     get id do
       id
-        |> Repo.get_job
-        |> Map.from_struct
-        |> reply 200
+      |> Repo.get_job
+      |> Map.from_struct
+      |> reply 200
     end
 
     get do
       cond do
         ticket = query["ticket"] ->
-          Repo.find_jobs(%{"ticket" => ticket})
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          %{"ticket" => ticket}
+          |> Repo.find_jobs
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
         true ->
-          Repo.find_jobs(%{})
-            |> Enum.map(&(Map.from_struct &1))
-            |> reply 200
+          %{}
+          |> Repo.find_jobs
+          |> Enum.map(&(Map.from_struct &1))
+          |> reply 200
       end
     end
   end
