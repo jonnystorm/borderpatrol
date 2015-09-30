@@ -12,6 +12,8 @@ defmodule BorderPatrol.Repo.Migrations.CreateEndpoints do
       add :ip_addr, :inet
       add :mac_addr, :macaddr
     end
+
+    create unique_index(:endpoints, [:name, :ip_addr, :mac_addr])
   end
 
   def down do

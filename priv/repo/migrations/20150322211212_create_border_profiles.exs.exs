@@ -12,6 +12,8 @@ defmodule Elixir.BorderPatrol.Repo.Migrations.CreateBorderProfiles do
       add :module, :string, size: 255
       add :description, :string, size: 255
     end
+
+    create unique_index(:border_profiles, [:name])
   end
 
   def down do

@@ -11,6 +11,8 @@ defmodule BorderPatrol.Repo.Migrations.CreateEdgeInterfaceToEndpoint do
       add :edge_interface_id, references(:edge_interfaces)
       add :endpoint_id, references(:endpoints)
     end
+
+    create unique_index(:edge_interface_to_endpoint, [:endpoint_id])
   end
 
   def down do

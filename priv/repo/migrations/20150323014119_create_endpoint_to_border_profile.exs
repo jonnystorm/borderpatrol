@@ -11,6 +11,11 @@ defmodule BorderPatrol.Repo.Migrations.CreateEndpointToBorderProfile do
       add :endpoint_id, references(:endpoints)
       add :border_profile_id, references(:border_profiles)
     end
+
+    create unique_index(
+      :endpoint_to_border_profile,
+      [:endpoint_id, :border_profile_id]
+    )
   end
 
   def down do

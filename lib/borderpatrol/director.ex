@@ -152,7 +152,7 @@ defmodule BorderPatrol.Director do
       {{:badmatch, {:error, :timeout}}, _} ->
         end_job job, 8
 
-      {{:badmatch, [error: :snmp_err_inconsistentvalue]}, _}
+      {{:badmatch, [error: :snmp_err_inconsistentvalue]}, _} ->
         end_job job, 9
 
       msg ->

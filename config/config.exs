@@ -1,5 +1,7 @@
 use Mix.Config
 
+config :logger, :console, level: :info
+
 config :borderpatrol, BorderPatrol.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "borderpatrol",

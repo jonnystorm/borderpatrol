@@ -10,6 +10,8 @@ defmodule BorderPatrol.Repo.Migrations.CreateUsers do
     create table(:users) do
       add :name, :string, size: 255
     end
+
+    create unique_index(:users, [:name])
   end
 
   def down do

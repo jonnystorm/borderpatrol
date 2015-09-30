@@ -11,6 +11,8 @@ defmodule BorderPatrol.Repo.Migrations.CreateEdgeDevices do
       add :hostname, :string, size: 255
       add :ip_addr, :inet
     end
+
+    create unique_index(:edge_devices, [:hostname, :ip_addr])
   end
 
   def down do

@@ -14,7 +14,7 @@ defmodule BorderPatrol.Mixfile do
 
   defp deps do
     [
-      {:urna, "~> 0.1.4"},
+      {:urna, git: "https://github.com/meh/urna", ref: "cceb5ef10b"},
       {:cauldron, "~> 0.1.5"},
       {:ecto, "~> 1.0.0"},
       {:postgrex, ">= 0.0.0"},
