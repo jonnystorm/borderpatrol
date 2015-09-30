@@ -8,8 +8,11 @@ defmodule BorderPatrol.Repo.Migrations.CreateEdgeInterfaces do
 
   def up do
     create table(:edge_interfaces) do
+      add :edge_device_id, references(:edge_devices)
       add :name, :string, size: 255
     end
+
+    create unique_index(:edge_interfaces, [:edge_device_id, :name])
   end
 
   def down do
