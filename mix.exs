@@ -7,9 +7,26 @@ defmodule BorderPatrol.Mixfile do
      elixir: "~> 1.0", deps: deps]
   end
 
+  defp get_application(:prod) do
+    [
+      applications: [
+        :logger,
+        :ecto,
+        :urna,
+        :postgrex,
+        :cisco_snmp_ex,
+        :tftp_ex,
+        :acl_ex
+      ],
+      mod: {BorderPatrol, []}
+    ]
+  end
+  defp get_application(_) do
+    [applications: [:logger]]
+  end
+
   def application do
-    [applications: [:logger, :ecto],
-     mod: {BorderPatrol, []}]
+    get_application Mix.env
   end
 
   defp deps do
