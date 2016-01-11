@@ -13,6 +13,8 @@ defmodule BorderPatrol.REST do
 
   alias BorderPatrol.Repo, as: Repo
 
+  require Logger
+
   resource :provision do
     post do
       endpoint = Repo.find_endpoints(params["endpointName"])
@@ -29,29 +31,32 @@ defmodule BorderPatrol.REST do
     end
   end
 
+  defp endpoint_to_endpoint_entry(endpoint) do
+    %{
+        endpoint_id: endpoint.endpoint.id,
+      endpoint_name: endpoint.endpoint.name,
+        endpoint_ip: endpoint.endpoint.ip_addr,
+       endpoint_mac: endpoint.endpoint.mac_addr,
+         profile_id: endpoint.border_profile.id,
+       profile_name: endpoint.border_profile.name
+    }
+  end
+
   resource :endpoints do
     get id do
       if endpoint = Repo.get_endpoint(id) do
-        %{
-          id: endpoint.id,
-          name: endpoint.name,
-          ip: endpoint.ip_addr,
-          mac: endpoint.mac_addr
-        } |> reply 200
+        endpoint_to_endpoint_entry(endpoint) |> reply 200
       else
         fail 404
       end
     end
 
     get do
-      params = uri.query && query || %{}
-
-      params
+      (uri.query && query || %{})
+      |> Enum.filter(fn p -> p in ["name", "ip", "mac"] end)
+      |> Enum.map(fn {key, value} -> {String.to_atom(key), value} end)
       |> Repo.find_endpoints
-      #|> Enum.map(fn s -> s |> Map.from_struct |> Map.delete(:__meta__) end)
-      |> Enum.map(fn m ->
-        %{id: m.id, name: m.name, ip: m.ip_addr, mac: m.mac_addr}
-      end)
+      |> Enum.map(fn e -> endpoint_to_endpoint_entry e end)
       |> reply 200
     end
 
@@ -73,7 +78,7 @@ defmodule BorderPatrol.REST do
 
     post do
       if endpoint = Repo.add_endpoint(params["name"], params["ip"], params["mac"]) do
-        endpoint.id |> reply 200
+        reply endpoint.id 200
       else
         fail 400
       end
@@ -89,42 +94,40 @@ defmodule BorderPatrol.REST do
     end
 
     get do
-      cond do
-        name = query["name"] ->
-          [name: name]
-          |> Repo.find_edge_devices
-          |> Enum.map(&(Map.from_struct &1))
-          |> reply 200
-        ip = query["ip"] ->
-          [ip: ip]
-          |> Repo.find_edge_devices
-          |> Enum.map(&(Map.from_struct &1))
-          |> reply 200
-      end
+      (uri.query && query || %{})
+      |> Enum.filter(fn p -> p in ["name", "ip"] end)
+      |> Enum.map(fn {key, value} -> {String.to_atom(key), value} end)
+      |> Repo.find_edge_devices
+      |> reply 200
     end
+  end
+
+  defp interface_to_edge_entry(interface) do
+    %{
+           device_id: interface.edge_device.id,
+         device_name: interface.edge_device.hostname,
+           device_ip: interface.edge_device.ip_addr,
+        interface_id: interface.edge_interface.id,
+      interface_name: interface.edge_interface.name
+    }
   end
 
   resource :interfaces do
     get id do
-      id
-      |> Repo.get_edge_interface
-      |> Map.from_struct
-      |> reply 200
+      if interface = Repo.get_edge_interface(id) do
+        interface_to_edge_entry(interface) |> reply 200
+      else
+        fail 404
+      end
     end
 
     get do
-      cond do
-        name = query["name"] ->
-          [name: name]
-          |> Repo.find_edge_interfaces
-          |> Enum.map(&(Map.from_struct &1))
-          |> reply 200
-        true ->
-          %{}
-          |> Repo.find_edge_interfaces
-          |> Enum.map(&(Map.from_struct &1))
-          |> reply 200
-      end
+      (uri.query && query || %{})
+      |> Enum.filter(fn p -> p in ["name", "ip"] end)
+      |> Enum.map(fn {key, value} -> {String.to_atom(key), value} end)
+      |> Repo.find_edge_interfaces
+      |> Enum.map(fn i -> interface_to_edge_entry i end)
+      |> reply 200
     end
   end
 

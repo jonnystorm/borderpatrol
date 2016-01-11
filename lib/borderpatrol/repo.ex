@@ -13,69 +13,81 @@ defmodule BorderPatrol.Repo do
   def find_jobs(params) do
     query = from j in Job
 
-    if started = params["started"] do
+    if started = params[:started] do
       query = from j in query, where: j.started == ^started
     end
 
-    if ended = params["ended"] do
+    if ended = params[:ended] do
       query = from j in query, where: j.ended == ^ended
     end
 
     query = from j in query, select: j,
       preload: [:edge_interface, :submitted_by]
 
-    Repo.all(query)
+    Repo.all query
   end
 
   def get_edge_interface(id) do
-    query = from e in EdgeInterface,
-      where: e.id == ^id,
-      select: e,
-      preload: [:edge_device, endpoints: :border_profiles]
-    [edge_interface] = Repo.all(query)
+    query =
+      from e in EdgeInterface,
+        where: e.id == ^id,
+        select: e,
+        preload: [:edge_device]
 
-    edge_interface
+    case Repo.all(query) do
+      [] ->
+        nil
+
+      [edge_interface] ->
+        edge_interface
+    end
   end
 
   def find_edge_interfaces(params) do
     query = from e in EdgeInterface
 
-    if name = params["name"] do
-      query = from e in query, where: e.name == ^name
+    if name = params[:name] do
+      query =
+        from e in query,
+          where: e.name == ^name
     end
 
-    query = from e in query, select: e,
-      preload: [:edge_device, endpoints: :border_profiles]
+    query =
+      from e in query,
+        select: e,
+        preload: [:edge_device]
 
     Repo.all(query)
   end
 
   def get_endpoint(id) do
-    query = from e in Endpoint,
-      where: e.id == ^id,
-      select: e,
-      preload: :border_profiles
+    query =
+      from e in EndpointToBorderProfile,
+        join: p in assoc(e, :endpoint),
+        where: p.id == ^id,
+        select: e,
+        preload: [:endpoint, :border_profile]
     [endpoint] = Repo.all(query)
 
     endpoint
   end
 
   def find_endpoints(params) do
-    query = from e in Endpoint
+    query = from e in EndpointToBorderProfile
 
-    if name = params["name"] do
+    if name = params[:name] do
       query = from e in query, where: e.name == ^name
     end
-    if ip = params["ip"] do
+    if ip = params[:ip] do
       query = from e in query, where: e.ip_addr == ^ip
     end
-    if mac = params["mac"] do
+    if mac = params[:mac] do
       query = from e in query, where: e.mac_addr == ^mac
     end
 
     query = from e in query,
       select: e,
-      preload: [:edge_interface, :border_profiles]
+      preload: [:endpoint, :border_profile]
 
     Repo.all(query)
   end
@@ -101,10 +113,10 @@ defmodule BorderPatrol.Repo do
   def find_edge_devices(params) do
     query = from e in EdgeDevice
 
-    if name = params["name"] do
+    if name = params[:name] do
       query = from e in query, where: e.name == ^name
     end
-    if ip = params["ip"] do
+    if ip = params[:ip] do
       query = from e in query, where: e.ip_addr == ^ip
     end
 
@@ -116,7 +128,7 @@ defmodule BorderPatrol.Repo do
   def find_border_profiles(params) do
     query = from p in BorderProfile
 
-    if name = params["name"] do
+    if name = params[:name] do
       query = from p in query, where: p.name == ^name
     end
     
@@ -137,10 +149,10 @@ defmodule BorderPatrol.Repo do
   def find_endpoint_to_border_profiles(params) do
     query = from e in EndpointToBorderProfile
 
-    if endpoint_id = params["endpoint_id"] do
+    if endpoint_id = params[:endpoint_id] do
       query = from e in query, where: e.endpoint_id == ^endpoint_id
     end
-    if profile_id = params["border_profile_id"] do
+    if profile_id = params[:border_profile_id] do
       query = from e in query, where: e.border_profile_id == ^profile_id
     end
 
@@ -186,9 +198,7 @@ defmodule EdgeDevice do
   schema "edge_devices" do
     field :hostname
     field :ip_addr
-    has_many :edge_interface_to_edge_devices, EdgeInterfaceToEdgeDevice
-    has_many :edge_interfaces,
-      through: [:edge_interface_to_edge_devices, :edge_interface]
+    has_many :edge_interfaces, EdgeInterface
   end
 
   def changeset(edge_device, params \\ nil) do
@@ -219,10 +229,8 @@ defmodule EdgeInterface do
 
   schema "edge_interfaces" do
     field :name
-    has_one :edge_interface_to_edge_device, EdgeInterfaceToEdgeDevice
+    belongs_to :edge_device, EdgeDevice
     has_many :edge_interface_to_endpoints, EdgeInterfaceToEndpoint
-    has_one :edge_device,
-      through: [:edge_interface_to_edge_device, :edge_device]
     has_many :endpoints,
       through: [:edge_interface_to_endpoints, :endpoint]
     has_many :jobs, Job
@@ -373,33 +381,6 @@ defmodule EdgeInterfaceToEndpoint do
 
   def create(_id, params) do
     changeset = changeset(%EdgeInterfaceToEndpoint{}, params)
-
-    if changeset.valid? do
-      Repo.insert(changeset)
-    end
-  end
-end
-
-defmodule EdgeInterfaceToEdgeDevice do
-  use Ecto.Model
-
-  alias BorderPatrol.Repo, as: Repo
-
-  schema "edge_interface_to_edge_device" do
-    belongs_to :edge_interface, EdgeInterface
-    belongs_to :edge_device, EdgeDevice
-  end
-
-  def changeset(edge_if_to_edge_dev, params \\ nil) do
-    edge_if_to_edge_dev
-      |> cast(params, ~w(edge_interface_id edge_device_id))
-      |> validate_inclusion(:edge_interface_id, 1..2147483647)
-      |> validate_inclusion(:edge_device_id, 1..2147483647)
-      |> unique_constraint(:edge_interface_id, on: Repo)
-  end
-
-  def create(_id, params) do
-    changeset = changeset(%EdgeInterfaceToEdgeDevice{}, params)
 
     if changeset.valid? do
       Repo.insert(changeset)
