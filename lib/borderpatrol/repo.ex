@@ -32,7 +32,7 @@ defmodule BorderPatrol.Repo do
       from e in EdgeInterface,
         where: e.id == ^id,
         select: e,
-        preload: [:edge_device, :endpoints, :border_profiles]
+        preload: [:edge_device, endpoints: :border_profiles]
 
     case Repo.all(query) do
       [] ->
@@ -233,13 +233,6 @@ defmodule EdgeInterface do
     has_many :edge_interface_to_endpoints, EdgeInterfaceToEndpoint
     has_many :endpoints,
       through: [:edge_interface_to_endpoints, :endpoint]
-    has_many :border_profiles,
-      through: [
-        :edge_interface_to_endpoints,
-        :endpoint,
-        :endpoint_to_border_profiles,
-        :border_profile
-      ]
     has_many :jobs, Job
   end
 

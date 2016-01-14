@@ -76,7 +76,7 @@ defmodule BorderPatrol.Director do
     :ok = TFTP.put(cfg_local_path, tftp_server_address, :binary)
     File.rm! cfg_local_path
     
-    snmp_agent = Pathname.new(edge_dev.ip_addr)
+    snmp_agent = URI.parse "snmp://#{edge_dev.ip_addr}"
 
     CiscoSNMP.copy_tftp_run(
       tftp_server_address,
@@ -152,8 +152,13 @@ defmodule BorderPatrol.Director do
       {{:badmatch, {:error, :timeout}}, _} ->
         end_job job, 8
 
+      # unable to assign value at this time
       {{:badmatch, [error: :snmp_err_inconsistentvalue]}, _} ->
         end_job job, 9
+
+      # read or write not permitted for this OID
+      {{:badmatch, [error: :snmp_err_noaccess]}, _} ->
+        end_job job, 10
 
       msg ->
         Logger.warn "Received unknown error from job #{job.id}: #{inspect msg}"

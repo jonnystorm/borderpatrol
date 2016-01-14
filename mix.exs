@@ -3,7 +3,7 @@ defmodule BorderPatrol.Mixfile do
 
   def project do
     [app: :borderpatrol,
-     version: "0.0.5",
+     version: "0.0.6",
      elixir: "~> 1.0", deps: deps]
   end
 
