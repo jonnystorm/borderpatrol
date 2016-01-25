@@ -148,15 +148,15 @@ defmodule BorderPatrol.Director do
       {{:badmatch, []}, _} ->
         end_job job, 7
 
-      # config copy timed out
+      # config copy to TFTP timed out
       {{:badmatch, {:error, :timeout}}, _} ->
         end_job job, 8
 
-      # unable to assign value at this time
+      # unable to assign value to OID now
       {{:badmatch, [error: :snmp_err_inconsistentvalue]}, _} ->
         end_job job, 9
 
-      # read or write not permitted for this OID
+      # read or write not permitted for OID
       {{:badmatch, [error: :snmp_err_noaccess]}, _} ->
         end_job job, 10
 
